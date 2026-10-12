@@ -53,6 +53,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import ru.urfu.cryptoapp.R
 import ru.urfu.cryptoapp.data.mock.MockCoinData
 import ru.urfu.cryptoapp.domain.model.CoinDetails
+import ru.urfu.cryptoapp.domain.model.CoinLinks
 import ru.urfu.cryptoapp.domain.model.CoinMarket
 import ru.urfu.cryptoapp.ui.common.CoinAvatar
 import ru.urfu.cryptoapp.ui.common.ErrorState
@@ -60,6 +61,7 @@ import ru.urfu.cryptoapp.ui.common.PriceChangeChip
 import ru.urfu.cryptoapp.ui.common.formatCompact
 import ru.urfu.cryptoapp.ui.common.formatCompactUsd
 import ru.urfu.cryptoapp.ui.common.formatPrice
+import ru.urfu.cryptoapp.ui.common.messageRes
 import ru.urfu.cryptoapp.ui.theme.CryptoAppTheme
 import ru.urfu.cryptoapp.ui.theme.PriceDown
 import ru.urfu.cryptoapp.ui.theme.PriceUp
@@ -105,7 +107,7 @@ fun CoinDetailsScreen(
         ) {
             when (state) {
                 CoinDetailsUiState.Loading -> CircularProgressIndicator()
-                is CoinDetailsUiState.Error -> ErrorState(stringResource(R.string.error_generic), onRetry)
+                is CoinDetailsUiState.Error -> ErrorState(stringResource(state.error.messageRes()), onRetry)
                 is CoinDetailsUiState.Content -> CoinDetailsContent(state.details, state.market)
             }
         }
@@ -128,10 +130,12 @@ private fun CoinDetailsContent(details: CoinDetails, market: CoinMarket?) {
         }
         Section(stringResource(R.string.section_about)) { AboutBlock(details) }
         Section(stringResource(R.string.section_info)) { InfoBlock(details) }
-        Section(stringResource(R.string.section_sentiment)) {
-            SentimentBar(details.sentimentVotesUpPercentage)
+        details.sentimentVotesUpPercentage?.let { upPercentage ->
+            Section(stringResource(R.string.section_sentiment)) { SentimentBar(upPercentage) }
         }
-        Section(stringResource(R.string.section_links)) { LinksBlock(details) }
+        if (details.links.hasAny()) {
+            Section(stringResource(R.string.section_links)) { LinksBlock(details) }
+        }
     }
 }
 
@@ -183,7 +187,7 @@ private fun CoinHeader(details: CoinDetails, market: CoinMarket?) {
             },
         )
         Text(
-            text = "#${details.marketCapRank}",
+            text = details.marketCapRank?.let { "#$it" } ?: "#—",
             style = MaterialTheme.typography.labelLarge,
             color = MaterialTheme.colorScheme.onPrimaryContainer,
             modifier = Modifier
@@ -315,15 +319,17 @@ private fun AboutBlock(details: CoinDetails) {
                 AssistChip(onClick = {}, label = { Text(category) })
             }
         }
-        Text(
-            text = details.description,
-            style = MaterialTheme.typography.bodyMedium,
-            maxLines = if (expanded) Int.MAX_VALUE else 4,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.padding(top = 8.dp),
-        )
-        TextButton(onClick = { expanded = !expanded }) {
-            Text(stringResource(if (expanded) R.string.show_less else R.string.show_more))
+        if (details.description.isNotBlank()) {
+            Text(
+                text = details.description,
+                style = MaterialTheme.typography.bodyMedium,
+                maxLines = if (expanded) Int.MAX_VALUE else 4,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.padding(top = 8.dp),
+            )
+            TextButton(onClick = { expanded = !expanded }) {
+                Text(stringResource(if (expanded) R.string.show_less else R.string.show_more))
+            }
         }
     }
 }
@@ -335,7 +341,7 @@ private fun InfoBlock(details: CoinDetails) {
         HorizontalDivider()
         InfoRow(stringResource(R.string.genesis_date), details.genesisDate ?: "—")
         HorizontalDivider()
-        InfoRow(stringResource(R.string.watchlist_users), details.watchlistUsers.toDouble().formatCompact())
+        InfoRow(stringResource(R.string.watchlist_users), details.watchlistUsers?.toDouble()?.formatCompact() ?: "—")
     }
 }
 
@@ -394,6 +400,9 @@ private fun LinksBlock(details: CoinDetails) {
         }
     }
 }
+
+private fun CoinLinks.hasAny(): Boolean =
+    listOf(homepage, blockchainSite, subreddit, github).any { it != null }
 
 @Composable
 private fun Section(title: String, content: @Composable () -> Unit) {

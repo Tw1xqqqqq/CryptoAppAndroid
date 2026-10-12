@@ -11,6 +11,10 @@
     <string name="back">Назад</string>
     <string name="retry">Повторить</string>
     <string name="error_generic">Не удалось загрузить данные</string>
+    <string name="error_network">Нет подключения к интернету.\nПроверьте сеть и повторите попытку.</string>
+    <string name="error_rate_limit">Слишком много запросов к CoinGecko.\nПодождите минуту и повторите.</string>
+    <string name="error_not_found">Монета не найдена</string>
+    <string name="error_server">Сервер CoinGecko временно недоступен.\nПопробуйте позже.</string>
 
     <string name="market_cap">Капитализация</string>
     <string name="volume_24h">Объём 24ч</string>

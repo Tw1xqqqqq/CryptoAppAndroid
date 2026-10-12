@@ -9,13 +9,13 @@ data class CoinDetails(
     val symbol: String,                      // symbol
     val name: String,                        // name
     val imageUrl: String,                    // image.large
-    val description: String,                 // description.en
+    val description: String,                 // description.en (без HTML-тегов)
     val categories: List<String>,            // categories
     val hashingAlgorithm: String?,           // hashing_algorithm
     val genesisDate: String?,                // genesis_date
-    val marketCapRank: Int,                  // market_cap_rank
-    val sentimentVotesUpPercentage: Double,  // sentiment_votes_up_percentage
-    val watchlistUsers: Int,                 // watchlist_portfolio_users
+    val marketCapRank: Int?,                 // market_cap_rank
+    val sentimentVotesUpPercentage: Double?, // sentiment_votes_up_percentage
+    val watchlistUsers: Int?,                // watchlist_portfolio_users
     val links: CoinLinks,                    // links
 )
 
