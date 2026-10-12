@@ -18,8 +18,11 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -42,6 +45,7 @@ import ru.urfu.cryptoapp.ui.common.ErrorState
 import ru.urfu.cryptoapp.ui.common.PriceChangeChip
 import ru.urfu.cryptoapp.ui.common.formatCompactUsd
 import ru.urfu.cryptoapp.ui.common.formatPrice
+import ru.urfu.cryptoapp.ui.common.messageRes
 import ru.urfu.cryptoapp.ui.theme.CryptoAppTheme
 
 @Composable
@@ -54,6 +58,8 @@ fun CoinListRoute(
         state = state,
         onCoinClick = onCoinClick,
         onLoadMore = viewModel::loadNextPage,
+        onRefresh = viewModel::refresh,
+        onRefreshErrorShown = viewModel::onRefreshErrorShown,
     )
 }
 
@@ -63,11 +69,25 @@ fun CoinListScreen(
     state: CoinListUiState,
     onCoinClick: (String) -> Unit,
     onLoadMore: () -> Unit,
+    onRefresh: () -> Unit,
+    onRefreshErrorShown: () -> Unit,
 ) {
+    val snackbarHostState = remember { SnackbarHostState() }
+    val refreshErrorMessage = state.refreshError?.let { stringResource(it.messageRes()) }
+    LaunchedEffect(refreshErrorMessage) {
+        if (refreshErrorMessage != null) {
+            snackbarHostState.showSnackbar(refreshErrorMessage)
+            onRefreshErrorShown()
+        }
+    }
+
     Scaffold(
         topBar = { TopAppBar(title = { Text(stringResource(R.string.coins_title)) }) },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { padding ->
-        Box(
+        PullToRefreshBox(
+            isRefreshing = state.isRefreshing,
+            onRefresh = onRefresh,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding),
@@ -76,7 +96,7 @@ fun CoinListScreen(
             when {
                 state.isLoading && state.coins.isEmpty() -> CircularProgressIndicator()
                 state.error != null && state.coins.isEmpty() -> ErrorState(
-                    message = stringResource(R.string.error_generic),
+                    message = stringResource(state.error.messageRes()),
                     onRetry = onLoadMore,
                 )
                 else -> CoinList(state, onCoinClick, onLoadMore)
@@ -113,7 +133,7 @@ private fun CoinList(
         if (state.error != null && state.coins.isNotEmpty()) {
             item(key = "error_more") {
                 ErrorState(
-                    message = stringResource(R.string.error_generic),
+                    message = stringResource(state.error.messageRes()),
                     onRetry = onLoadMore,
                     modifier = Modifier.fillMaxWidth(),
                 )
@@ -190,6 +210,8 @@ private fun CoinListScreenPreview() {
             state = CoinListUiState(coins = MockCoinData.markets.take(6)),
             onCoinClick = {},
             onLoadMore = {},
+            onRefresh = {},
+            onRefreshErrorShown = {},
         )
     }
 }
