@@ -3,6 +3,7 @@ package ru.urfu.cryptoapp.data.mock
 import ru.urfu.cryptoapp.domain.model.CoinDetails
 import ru.urfu.cryptoapp.domain.model.CoinLinks
 import ru.urfu.cryptoapp.domain.model.CoinMarket
+import ru.urfu.cryptoapp.domain.model.VsCurrency
 
 /** Моковые данные в формате CoinGecko для Compose-превью. Значения приблизительные. */
 object MockCoinData {
@@ -180,5 +181,6 @@ object MockCoinData {
         priceChangePercentage24h = change,
         circulatingSupply = circulating,
         maxSupply = maxSupply,
+        currency = VsCurrency.USD,
     )
 }

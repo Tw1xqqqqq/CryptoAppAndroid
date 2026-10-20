@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.ksp)
 }
 
 // Необязательный демо-ключ CoinGecko: строка COINGECKO_API_KEY=... в local.properties.
@@ -80,4 +81,14 @@ dependencies {
     // Chucker — просмотр запросов прямо на устройстве (только debug)
     debugImplementation(libs.chucker)
     releaseImplementation(libs.chucker.no.op)
+
+    // Локальное хранение: Room (избранное) и DataStore (фильтры)
+    implementation(libs.room.runtime)
+    implementation(libs.room.ktx)
+    ksp(libs.room.compiler)
+    implementation(libs.datastore.preferences)
+
+    // DI
+    implementation(libs.koin.android)
+    implementation(libs.koin.androidx.compose)
 }

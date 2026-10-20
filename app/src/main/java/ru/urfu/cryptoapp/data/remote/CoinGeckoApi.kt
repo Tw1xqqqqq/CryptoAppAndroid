@@ -16,6 +16,7 @@ interface CoinGeckoApi {
         @Query("per_page") perPage: Int,
         @Query("page") page: Int,
         @Query("order") order: String = "market_cap_desc",
+        @Query("category") category: String? = null,
         @Query("ids") ids: String? = null, // null — параметр не попадёт в запрос
     ): List<CoinMarketDto>
 

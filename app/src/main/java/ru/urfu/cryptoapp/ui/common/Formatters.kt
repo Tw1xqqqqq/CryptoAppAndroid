@@ -1,19 +1,28 @@
 package ru.urfu.cryptoapp.ui.common
 
+import ru.urfu.cryptoapp.domain.model.VsCurrency
 import java.text.NumberFormat
 import java.util.Locale
 import kotlin.math.abs
 
-/** $62,350.00 / $0.5321 / $0.00001742 */
-fun Double.formatPrice(): String {
-    val format = NumberFormat.getCurrencyInstance(Locale.US)
+val VsCurrency.symbol: String
+    get() = when (this) {
+        VsCurrency.USD -> "$"
+        VsCurrency.EUR -> "€"
+        VsCurrency.RUB -> "₽"
+    }
+
+/** $62,350.00 / €0.5321 / ₽0.00001742 */
+fun Double.formatPrice(currency: VsCurrency): String {
+    val format = NumberFormat.getNumberInstance(Locale.US)
     format.minimumFractionDigits = 2
     format.maximumFractionDigits = when {
         abs(this) >= 1.0 -> 2
         abs(this) >= 0.01 -> 4
         else -> 8
     }
-    return format.format(this)
+    val sign = if (this < 0) "-" else ""
+    return sign + currency.symbol + format.format(abs(this))
 }
 
 /** 1.23T / 456.70B / 12.30M */
@@ -29,7 +38,7 @@ fun Double.formatCompact(): String {
     }
 }
 
-fun Double.formatCompactUsd(): String = "$" + formatCompact()
+fun Double.formatCompactMoney(currency: VsCurrency): String = currency.symbol + formatCompact()
 
 /** +1.84% / -0.92% */
 fun Double.formatPercent(): String = "%+.2f%%".format(Locale.US, this)

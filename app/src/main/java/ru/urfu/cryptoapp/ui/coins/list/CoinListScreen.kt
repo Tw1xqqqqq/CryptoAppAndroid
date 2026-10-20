@@ -13,9 +13,16 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -36,14 +43,15 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
+import org.koin.androidx.compose.koinViewModel
 import ru.urfu.cryptoapp.R
 import ru.urfu.cryptoapp.data.mock.MockCoinData
 import ru.urfu.cryptoapp.domain.model.CoinMarket
 import ru.urfu.cryptoapp.ui.common.CoinAvatar
 import ru.urfu.cryptoapp.ui.common.ErrorState
 import ru.urfu.cryptoapp.ui.common.PriceChangeChip
-import ru.urfu.cryptoapp.ui.common.formatCompactUsd
+import ru.urfu.cryptoapp.ui.common.PlaceholderScreen
+import ru.urfu.cryptoapp.ui.common.formatCompactMoney
 import ru.urfu.cryptoapp.ui.common.formatPrice
 import ru.urfu.cryptoapp.ui.common.messageRes
 import ru.urfu.cryptoapp.ui.theme.CryptoAppTheme
@@ -51,12 +59,14 @@ import ru.urfu.cryptoapp.ui.theme.CryptoAppTheme
 @Composable
 fun CoinListRoute(
     onCoinClick: (String) -> Unit,
-    viewModel: CoinListViewModel = viewModel(factory = CoinListViewModel.Factory),
+    onFiltersClick: () -> Unit,
+    viewModel: CoinListViewModel = koinViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     CoinListScreen(
         state = state,
         onCoinClick = onCoinClick,
+        onFiltersClick = onFiltersClick,
         onLoadMore = viewModel::loadNextPage,
         onRefresh = viewModel::refresh,
         onRefreshErrorShown = viewModel::onRefreshErrorShown,
@@ -68,6 +78,7 @@ fun CoinListRoute(
 fun CoinListScreen(
     state: CoinListUiState,
     onCoinClick: (String) -> Unit,
+    onFiltersClick: () -> Unit,
     onLoadMore: () -> Unit,
     onRefresh: () -> Unit,
     onRefreshErrorShown: () -> Unit,
@@ -82,7 +93,12 @@ fun CoinListScreen(
     }
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text(stringResource(R.string.coins_title)) }) },
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(R.string.coins_title)) },
+                actions = { FiltersButton(showBadge = state.showFilterBadge, onClick = onFiltersClick) },
+            )
+        },
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { padding ->
         PullToRefreshBox(
@@ -99,8 +115,22 @@ fun CoinListScreen(
                     message = stringResource(state.error.messageRes()),
                     onRetry = onLoadMore,
                 )
+                state.coins.isEmpty() && state.endReached -> PlaceholderScreen(
+                    icon = Icons.Filled.Search,
+                    text = stringResource(R.string.coins_empty),
+                )
                 else -> CoinList(state, onCoinClick, onLoadMore)
             }
+        }
+    }
+}
+
+/** Кнопка фильтров; точка-бейдж — если фильтры отличаются от настроек по умолчанию. */
+@Composable
+private fun FiltersButton(showBadge: Boolean, onClick: () -> Unit) {
+    IconButton(onClick = onClick) {
+        BadgedBox(badge = { if (showBadge) Badge() }) {
+            Icon(Icons.Filled.Settings, contentDescription = stringResource(R.string.filters_title))
         }
     }
 }
@@ -185,14 +215,14 @@ fun CoinListItem(coin: CoinMarket, onClick: () -> Unit, modifier: Modifier = Mod
                     overflow = TextOverflow.Ellipsis,
                 )
                 Text(
-                    text = "${coin.symbol.uppercase()} · ${coin.marketCap.formatCompactUsd()}",
+                    text = "${coin.symbol.uppercase()} · ${coin.marketCap.formatCompactMoney(coin.currency)}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
             Column(horizontalAlignment = Alignment.End) {
                 Text(
-                    text = coin.currentPrice.formatPrice(),
+                    text = coin.currentPrice.formatPrice(coin.currency),
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.SemiBold,
                 )
@@ -207,8 +237,9 @@ fun CoinListItem(coin: CoinMarket, onClick: () -> Unit, modifier: Modifier = Mod
 private fun CoinListScreenPreview() {
     CryptoAppTheme(dynamicColor = false) {
         CoinListScreen(
-            state = CoinListUiState(coins = MockCoinData.markets.take(6)),
+            state = CoinListUiState(coins = MockCoinData.markets.take(6), isLoading = false, showFilterBadge = true),
             onCoinClick = {},
+            onFiltersClick = {},
             onLoadMore = {},
             onRefresh = {},
             onRefreshErrorShown = {},

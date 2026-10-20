@@ -18,6 +18,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
@@ -26,6 +28,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -49,7 +52,7 @@ import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
+import org.koin.androidx.compose.koinViewModel
 import ru.urfu.cryptoapp.R
 import ru.urfu.cryptoapp.data.mock.MockCoinData
 import ru.urfu.cryptoapp.domain.model.CoinDetails
@@ -59,7 +62,7 @@ import ru.urfu.cryptoapp.ui.common.CoinAvatar
 import ru.urfu.cryptoapp.ui.common.ErrorState
 import ru.urfu.cryptoapp.ui.common.PriceChangeChip
 import ru.urfu.cryptoapp.ui.common.formatCompact
-import ru.urfu.cryptoapp.ui.common.formatCompactUsd
+import ru.urfu.cryptoapp.ui.common.formatCompactMoney
 import ru.urfu.cryptoapp.ui.common.formatPrice
 import ru.urfu.cryptoapp.ui.common.messageRes
 import ru.urfu.cryptoapp.ui.theme.CryptoAppTheme
@@ -70,18 +73,27 @@ import java.util.Locale
 @Composable
 fun CoinDetailsRoute(
     onBack: () -> Unit,
-    viewModel: CoinDetailsViewModel = viewModel(factory = CoinDetailsViewModel.Factory),
+    viewModel: CoinDetailsViewModel = koinViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    CoinDetailsScreen(state = state, onBack = onBack, onRetry = viewModel::load)
+    val isFavorite by viewModel.isFavorite.collectAsStateWithLifecycle()
+    CoinDetailsScreen(
+        state = state,
+        isFavorite = isFavorite,
+        onBack = onBack,
+        onRetry = viewModel::load,
+        onFavoriteClick = viewModel::onFavoriteClick,
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CoinDetailsScreen(
     state: CoinDetailsUiState,
+    isFavorite: Boolean,
     onBack: () -> Unit,
     onRetry: () -> Unit,
+    onFavoriteClick: () -> Unit,
 ) {
     Scaffold(
         topBar = {
@@ -94,6 +106,18 @@ fun CoinDetailsScreen(
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back))
+                    }
+                },
+                actions = {
+                    val canToggle = (state as? CoinDetailsUiState.Content)?.market != null
+                    IconButton(onClick = onFavoriteClick, enabled = canToggle || isFavorite) {
+                        Icon(
+                            imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+                            contentDescription = stringResource(
+                                if (isFavorite) R.string.favorite_remove else R.string.favorite_add,
+                            ),
+                            tint = if (isFavorite) PriceDown else LocalContentColor.current,
+                        )
                     }
                 },
             )
@@ -202,7 +226,7 @@ private fun CoinHeader(details: CoinDetails, market: CoinMarket?) {
 
         if (market != null) {
             Text(
-                text = market.currentPrice.formatPrice(),
+                text = market.currentPrice.formatPrice(market.currency),
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.SemiBold,
                 modifier = Modifier.constrainAs(price) {
@@ -243,9 +267,9 @@ private fun PriceRange(market: CoinMarket, modifier: Modifier = Modifier) {
                 .clip(RoundedCornerShape(3.dp)),
         )
         Row(Modifier.fillMaxWidth().padding(top = 4.dp), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text(market.low24h.formatPrice(), style = MaterialTheme.typography.labelSmall)
+            Text(market.low24h.formatPrice(market.currency), style = MaterialTheme.typography.labelSmall)
             Text("24h", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Text(market.high24h.formatPrice(), style = MaterialTheme.typography.labelSmall)
+            Text(market.high24h.formatPrice(market.currency), style = MaterialTheme.typography.labelSmall)
         }
     }
 }
@@ -259,12 +283,12 @@ private fun PriceRange(market: CoinMarket, modifier: Modifier = Modifier) {
 private fun MarketStatsGrid(market: CoinMarket) {
     val notLimited = stringResource(R.string.not_limited)
     val cells = listOf(
-        stringResource(R.string.market_cap) to market.marketCap.formatCompactUsd(),
-        stringResource(R.string.volume_24h) to market.totalVolume.formatCompactUsd(),
+        stringResource(R.string.market_cap) to market.marketCap.formatCompactMoney(market.currency),
+        stringResource(R.string.volume_24h) to market.totalVolume.formatCompactMoney(market.currency),
         stringResource(R.string.circulating_supply) to market.circulatingSupply.formatCompact(),
         stringResource(R.string.max_supply) to (market.maxSupply?.formatCompact() ?: notLimited),
-        stringResource(R.string.high_24h) to market.high24h.formatPrice(),
-        stringResource(R.string.low_24h) to market.low24h.formatPrice(),
+        stringResource(R.string.high_24h) to market.high24h.formatPrice(market.currency),
+        stringResource(R.string.low_24h) to market.low24h.formatPrice(market.currency),
     )
 
     ConstraintLayout(Modifier.fillMaxWidth()) {
@@ -421,8 +445,10 @@ private fun CoinDetailsPreview() {
                 details = MockCoinData.details("bitcoin")!!,
                 market = MockCoinData.markets.first(),
             ),
+            isFavorite = true,
             onBack = {},
             onRetry = {},
+            onFavoriteClick = {},
         )
     }
 }

@@ -4,7 +4,6 @@
 
     <string name="tab_coins">Монеты</string>
     <string name="tab_favorites">Избранное</string>
-    <string name="tab_settings">Настройки</string>
 
     <string name="coins_title">Криптовалюты</string>
     <string name="coin_details_title">Детали</string>
@@ -39,6 +38,32 @@
     <string name="link_reddit">Reddit</string>
     <string name="link_github">GitHub</string>
 
-    <string name="favorites_placeholder">Здесь появятся избранные монеты</string>
-    <string name="settings_placeholder">Здесь появятся настройки (валюта, сортировка)</string>
+    <string name="coins_empty">По выбранным фильтрам монет не найдено</string>
+
+    <string name="favorites_empty">Пока пусто.\nОткройте монету и нажмите ♡, чтобы добавить её в избранное.</string>
+    <string name="favorites_hint">Сохранено на устройстве и доступно без интернета. Цены — на момент добавления.</string>
+    <string name="favorite_add">Добавить в избранное</string>
+    <string name="favorite_remove">Убрать из избранного</string>
+
+    <string name="filters_title">Фильтры</string>
+    <string name="filters_reset">Сбросить</string>
+    <string name="filters_apply">Готово</string>
+    <string name="filter_currency">Валюта</string>
+    <string name="filter_order">Сортировка</string>
+    <string name="filter_category">Категория</string>
+    <string name="currency_usd">USD $</string>
+    <string name="currency_eur">EUR €</string>
+    <string name="currency_rub">RUB ₽</string>
+    <string name="order_market_cap_desc">Капитализация: по убыванию</string>
+    <string name="order_market_cap_asc">Капитализация: по возрастанию</string>
+    <string name="order_volume_desc">Объём торгов: по убыванию</string>
+    <string name="order_volume_asc">Объём торгов: по возрастанию</string>
+    <string name="category_all">Все</string>
+    <string name="category_layer_1">Layer 1</string>
+    <string name="category_smart_contract">Смарт-контракты</string>
+    <string name="category_defi">DeFi</string>
+    <string name="category_meme">Мем-коины</string>
+    <string name="category_stablecoins">Стейблкоины</string>
+    <string name="category_ai">ИИ</string>
+    <string name="category_gaming">Игры</string>
 </resources>
