@@ -22,7 +22,6 @@
     <string name="max_supply">Макс. эмиссия</string>
     <string name="high_24h">Максимум 24ч</string>
     <string name="low_24h">Минимум 24ч</string>
-    <string name="not_limited">∞</string>
 
     <string name="section_market">Рынок</string>
     <string name="section_about">О монете</string>

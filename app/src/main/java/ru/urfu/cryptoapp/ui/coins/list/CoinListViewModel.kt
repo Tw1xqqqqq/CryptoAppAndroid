@@ -12,13 +12,14 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import ru.urfu.cryptoapp.CryptoApplication
-import ru.urfu.cryptoapp.domain.model.CoinMarket
 import ru.urfu.cryptoapp.domain.model.DataError
 import ru.urfu.cryptoapp.domain.model.toDataError
 import ru.urfu.cryptoapp.domain.usecase.GetCoinMarketsUseCase
+import ru.urfu.cryptoapp.ui.coins.model.CoinListItemUi
+import ru.urfu.cryptoapp.ui.coins.model.CoinUiMapper
 
 data class CoinListUiState(
-    val coins: List<CoinMarket> = emptyList(),
+    val coins: List<CoinListItemUi> = emptyList(),
     val isLoading: Boolean = false,      // первая страница
     val isLoadingMore: Boolean = false,  // следующие страницы
     val isRefreshing: Boolean = false,   // pull-to-refresh
@@ -56,7 +57,7 @@ class CoinListViewModel(
                 nextPage = page + 1
                 _uiState.update {
                     it.copy(
-                        coins = it.coins + coins,
+                        coins = it.coins + coins.map(CoinUiMapper::toListItem),
                         isLoading = false,
                         isLoadingMore = false,
                         endReached = coins.size < PAGE_SIZE,
@@ -81,7 +82,10 @@ class CoinListViewModel(
             try {
                 val coins = getCoinMarkets(page = 1, perPage = PAGE_SIZE, forceRefresh = true)
                 nextPage = 2
-                _uiState.value = CoinListUiState(coins = coins, endReached = coins.size < PAGE_SIZE)
+                _uiState.value = CoinListUiState(
+                    coins = coins.map(CoinUiMapper::toListItem),
+                    endReached = coins.size < PAGE_SIZE,
+                )
             } catch (e: Exception) {
                 val error = e.toDataError()
                 _uiState.update {

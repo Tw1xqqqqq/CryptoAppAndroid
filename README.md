@@ -26,7 +26,8 @@ data/mapper         DTO -> доменные модели (null-поля API, о�
 data/cache          MemoryCache — кэш в памяти с TTL
 data/repository     CoinRepositoryImpl — сеть + кэш, withContext/flowOn(Dispatchers.IO)
 di                  AppContainer (ручной DI), создаётся в CryptoApplication
-ui/...              ViewModel вызывают use case'ы и отдают StateFlow<UiState>
+ui/coins/model      UI-модели и CoinUiMapper — экран получает уже отформатированные строки
+ui/...              ViewModel вызывают use case'ы и отдают StateFlow<UiState> с UI-моделями
 ```
 
 ## Загрузка и ошибки

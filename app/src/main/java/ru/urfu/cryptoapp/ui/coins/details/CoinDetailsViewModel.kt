@@ -15,16 +15,16 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import ru.urfu.cryptoapp.CryptoApplication
-import ru.urfu.cryptoapp.domain.model.CoinDetails
-import ru.urfu.cryptoapp.domain.model.CoinMarket
 import ru.urfu.cryptoapp.domain.model.DataError
 import ru.urfu.cryptoapp.domain.model.toDataError
 import ru.urfu.cryptoapp.domain.usecase.GetCoinOverviewUseCase
+import ru.urfu.cryptoapp.ui.coins.model.CoinDetailsUi
+import ru.urfu.cryptoapp.ui.coins.model.CoinUiMapper
 import ru.urfu.cryptoapp.ui.navigation.Routes
 
 sealed interface CoinDetailsUiState {
     data object Loading : CoinDetailsUiState
-    data class Content(val details: CoinDetails, val market: CoinMarket?) : CoinDetailsUiState
+    data class Content(val details: CoinDetailsUi) : CoinDetailsUiState
     data class Error(val error: DataError) : CoinDetailsUiState
 }
 
@@ -50,7 +50,7 @@ class CoinDetailsViewModel(
         _uiState.value = CoinDetailsUiState.Loading
         // Flow может отдать сначала кэш, а затем свежие данные — экран просто перерисуется
         loadJob = getCoinOverview(coinId)
-            .onEach { _uiState.value = CoinDetailsUiState.Content(it.details, it.market) }
+            .onEach { _uiState.value = CoinDetailsUiState.Content(CoinUiMapper.toDetails(it.details, it.market)) }
             .catch { _uiState.value = CoinDetailsUiState.Error(it.toDataError()) }
             .launchIn(viewModelScope)
     }

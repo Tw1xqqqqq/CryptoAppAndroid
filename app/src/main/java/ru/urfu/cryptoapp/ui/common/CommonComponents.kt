@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import ru.urfu.cryptoapp.R
+import ru.urfu.cryptoapp.ui.coins.model.PriceChangeUi
 import ru.urfu.cryptoapp.ui.theme.PriceDown
 import ru.urfu.cryptoapp.ui.theme.PriceUp
 
@@ -58,10 +59,10 @@ fun CoinAvatar(
 
 /** Плашка изменения цены: зелёная при росте, красная при падении. */
 @Composable
-fun PriceChangeChip(percent: Double, modifier: Modifier = Modifier) {
-    val color = if (percent >= 0) PriceUp else PriceDown
+fun PriceChangeChip(change: PriceChangeUi, modifier: Modifier = Modifier) {
+    val color = if (change.isPositive) PriceUp else PriceDown
     Text(
-        text = percent.formatPercent(),
+        text = change.text,
         color = color,
         style = MaterialTheme.typography.labelLarge,
         fontWeight = FontWeight.SemiBold,
