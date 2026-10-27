@@ -1,33 +1,61 @@
-# CryptoApp — Практика 4 «Работа с сетью»
+# CryptoApp — Практика 5 «Локальное хранение данных»
 
-Предметная область: **CoinGecko** (вариант 15). Данные загружаются из [CoinGecko API v3](https://docs.coingecko.com/reference/introduction).
+Предметная область: **CoinGecko** (вариант 15). Данные загружаются из [CoinGecko API v3](https://docs.coingecko.com/reference/introduction),
+фильтры хранятся в **DataStore**, избранное — в **Room**.
+
+## Практика 5
+### Задача 1. Фильтры (DataStore)
+Экран «Фильтры» открывается шестерёнкой в списке монет. Три настройки, все уходят в запрос `/coins/markets`:
+| Настройка | Параметр API | Значения |
+|---|---|---|
+| Валюта | `vs_currency` | USD / EUR / RUB |
+| Сортировка | `order` | капитализация или объём, по убыванию / возрастанию |
+| Категория | `category` | все, Layer 1, смарт-контракты, DeFi, мем-коины, стейблкоины, ИИ, игры |
+
+«Готово» сохраняет настройки в Preferences DataStore (`FiltersRepositoryImpl`), список подписан на них через Flow
+и перезагружается. После выгрузки приложения из памяти настройки читаются из DataStore при старте.
+
+### Задача 2. Избранное (Room + KSP)
+- ♡ в шапке экрана деталей добавляет / убирает монету.
+- Вкладка «Избранное» читает данные только из Room (`FavoritesDao` → `Flow`), поэтому работает без интернета.
+  Сохраняется снимок рыночных данных на момент добавления.
+
+### Задача 3. Бейдж
+Точка на кнопке фильтров, если настройки отличаются от значений по умолчанию.
+`FilterBadgeCache` — общий для экрана списка и экрана фильтров класс-кэш в памяти (`StateFlow<Boolean>`),
+создаётся Koin как `single` и внедряется в обе ViewModel.
 
 ## Стек
 - Jetpack Compose, Single Activity, `navigation-compose`
 - Сеть: **Retrofit 2.11** + **OkHttp 4.12** + **kotlinx.serialization**
 - Асинхронность: корутины и Flow, запросы на `Dispatchers.IO`
 - Отладка сети: **Chucker** (debug), `HttpLoggingInterceptor` в Logcat
-- Архитектура: **Clean Architecture** + MVVM
+- Архитектура: **Clean Architecture** + MVVM, DI — **Koin**
+- Локальное хранение: **Room** (KSP), **Preferences DataStore**
 
 ## Запросы
 | Экран | Запрос | Параметры |
 |---|---|---|
-| Список | `GET /coins/markets` | query: `vs_currency`, `order`, `per_page`, `page` (пагинация) |
+| Список | `GET /coins/markets` | query: `vs_currency`, `order`, `category`, `per_page`, `page` (пагинация) |
 | Детали | `GET /coins/{id}` | path: `id`; query: `localization`, `tickers`, `market_data`, ... |
 | Детали (шапка) | `GET /coins/markets?ids={id}` | только если монеты нет в кэше |
 
 ## Слои
 ```
-domain/model        CoinMarket, CoinDetails, CoinOverview, DataError + DataException
-domain/repository   CoinRepository — интерфейс
-domain/usecase      GetCoinMarketsUseCase, GetCoinOverviewUseCase (combine двух Flow)
-data/remote         CoinGeckoApi (Retrofit), DTO, ApiKeyInterceptor, safeApiCall
+domain/model        CoinMarket, CoinDetails, CoinOverview, CoinFilters, DataError + DataException
+domain/repository   CoinRepository, FiltersRepository, FavoritesRepository — интерфейсы
+domain/usecase      монеты, фильтры, избранное
+data/remote         CoinGeckoApi (Retrofit), DTO, ApiKeyInterceptor, safeApiCall, ApiParams
+data/local/prefs    FiltersRepositoryImpl — Preferences DataStore
+data/local/db       AppDatabase, FavoritesDao, FavoriteCoinEntity — Room
 data/mapper         DTO -> доменные модели (null-поля API, очистка HTML в описании)
-data/cache          MemoryCache — кэш в памяти с TTL
-data/repository     CoinRepositoryImpl — сеть + кэш, withContext/flowOn(Dispatchers.IO)
-di                  AppContainer (ручной DI), создаётся в CryptoApplication
-ui/coins/model      UI-модели и CoinUiMapper — экран получает уже отформатированные строки
-ui/...              ViewModel вызывают use case'ы и отдают StateFlow<UiState> с UI-моделями
+data/cache          MemoryCache — кэш ответов сети в памяти с TTL
+data/repository     CoinRepositoryImpl, FavoritesRepositoryImpl
+di                  модули Koin, запускаются в CryptoApplication
+ui/coins            список и детали
+ui/coins/model      UI-модели и CoinUiMapper: ViewModel отдаёт экрану уже отформатированные строки
+ui/filters          экран фильтров, FilterBadgeCache
+ui/favorites        экран избранного
 ```
 
 ## Загрузка и ошибки

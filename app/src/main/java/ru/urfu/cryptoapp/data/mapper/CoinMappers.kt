@@ -5,8 +5,9 @@ import ru.urfu.cryptoapp.data.remote.dto.CoinMarketDto
 import ru.urfu.cryptoapp.domain.model.CoinDetails
 import ru.urfu.cryptoapp.domain.model.CoinLinks
 import ru.urfu.cryptoapp.domain.model.CoinMarket
+import ru.urfu.cryptoapp.domain.model.VsCurrency
 
-fun CoinMarketDto.toDomain() = CoinMarket(
+fun CoinMarketDto.toDomain(currency: VsCurrency) = CoinMarket(
     id = id,
     symbol = symbol,
     name = name,
@@ -20,6 +21,7 @@ fun CoinMarketDto.toDomain() = CoinMarket(
     priceChangePercentage24h = priceChangePercentage24h ?: 0.0,
     circulatingSupply = circulatingSupply ?: 0.0,
     maxSupply = maxSupply,
+    currency = currency,
 )
 
 fun CoinDetailsDto.toDomain() = CoinDetails(

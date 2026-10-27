@@ -4,7 +4,7 @@ import ru.urfu.cryptoapp.R
 import ru.urfu.cryptoapp.domain.model.CoinDetails
 import ru.urfu.cryptoapp.domain.model.CoinMarket
 import ru.urfu.cryptoapp.ui.common.formatCompact
-import ru.urfu.cryptoapp.ui.common.formatCompactUsd
+import ru.urfu.cryptoapp.ui.common.formatCompactMoney
 import ru.urfu.cryptoapp.ui.common.formatPercent
 import ru.urfu.cryptoapp.ui.common.formatPrice
 import java.util.Locale
@@ -20,8 +20,8 @@ object CoinUiMapper {
         rank = coin.marketCapRank.toString(),
         name = coin.name,
         imageUrl = coin.imageUrl,
-        subtitle = "${coin.symbol.uppercase()} · ${coin.marketCap.formatCompactUsd()}",
-        price = coin.currentPrice.formatPrice(),
+        subtitle = "${coin.symbol.uppercase()} · ${coin.marketCap.formatCompactMoney(coin.currency)}",
+        price = coin.currentPrice.formatPrice(coin.currency),
         change = priceChange(coin.priceChangePercentage24h),
     )
 
@@ -48,20 +48,21 @@ object CoinUiMapper {
     )
 
     private fun toMarket(market: CoinMarket): CoinMarketUi {
+        val currency = market.currency
         val span = (market.high24h - market.low24h).takeIf { it > 0 } ?: 1.0
         return CoinMarketUi(
-            price = market.currentPrice.formatPrice(),
+            price = market.currentPrice.formatPrice(currency),
             change = priceChange(market.priceChangePercentage24h),
-            low24h = market.low24h.formatPrice(),
-            high24h = market.high24h.formatPrice(),
+            low24h = market.low24h.formatPrice(currency),
+            high24h = market.high24h.formatPrice(currency),
             rangeFraction = ((market.currentPrice - market.low24h) / span).toFloat().coerceIn(0f, 1f),
             stats = listOf(
-                LabeledValueUi(R.string.market_cap, market.marketCap.formatCompactUsd()),
-                LabeledValueUi(R.string.volume_24h, market.totalVolume.formatCompactUsd()),
+                LabeledValueUi(R.string.market_cap, market.marketCap.formatCompactMoney(currency)),
+                LabeledValueUi(R.string.volume_24h, market.totalVolume.formatCompactMoney(currency)),
                 LabeledValueUi(R.string.circulating_supply, market.circulatingSupply.formatCompact()),
                 LabeledValueUi(R.string.max_supply, market.maxSupply?.formatCompact() ?: NOT_LIMITED),
-                LabeledValueUi(R.string.high_24h, market.high24h.formatPrice()),
-                LabeledValueUi(R.string.low_24h, market.low24h.formatPrice()),
+                LabeledValueUi(R.string.high_24h, market.high24h.formatPrice(currency)),
+                LabeledValueUi(R.string.low_24h, market.low24h.formatPrice(currency)),
             ),
         )
     }

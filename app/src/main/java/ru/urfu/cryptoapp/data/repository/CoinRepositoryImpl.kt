@@ -10,10 +10,13 @@ import kotlinx.coroutines.withContext
 import ru.urfu.cryptoapp.data.cache.MemoryCache
 import ru.urfu.cryptoapp.data.mapper.toDomain
 import ru.urfu.cryptoapp.data.remote.CoinGeckoApi
+import ru.urfu.cryptoapp.data.remote.apiValue
 import ru.urfu.cryptoapp.data.remote.safeApiCall
 import ru.urfu.cryptoapp.domain.model.CoinDetails
+import ru.urfu.cryptoapp.domain.model.CoinFilters
 import ru.urfu.cryptoapp.domain.model.CoinMarket
 import ru.urfu.cryptoapp.domain.model.DataException
+import ru.urfu.cryptoapp.domain.model.VsCurrency
 import ru.urfu.cryptoapp.domain.repository.CoinRepository
 
 /**
@@ -26,8 +29,8 @@ class CoinRepositoryImpl(
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : CoinRepository {
 
-    private data class PageKey(val vsCurrency: String, val page: Int, val perPage: Int)
-    private data class MarketKey(val vsCurrency: String, val id: String)
+    private data class PageKey(val filters: CoinFilters, val page: Int, val perPage: Int)
+    private data class MarketKey(val currency: VsCurrency, val id: String)
 
     private val marketPages = MemoryCache<PageKey, List<CoinMarket>>(MARKETS_TTL_MS)
     private val markets = MemoryCache<MarketKey, CoinMarket>(MARKETS_TTL_MS)
@@ -36,23 +39,30 @@ class CoinRepositoryImpl(
     override suspend fun getMarkets(
         page: Int,
         perPage: Int,
-        vsCurrency: String,
+        filters: CoinFilters,
         forceRefresh: Boolean,
     ): List<CoinMarket> = withContext(ioDispatcher) {
-        val key = PageKey(vsCurrency, page, perPage)
+        val key = PageKey(filters, page, perPage)
         val cached = marketPages[key]
         if (cached != null && cached.isFresh && !forceRefresh) return@withContext cached.value
 
         val coins = try {
-            safeApiCall { api.getMarkets(vsCurrency = vsCurrency, perPage = perPage, page = page) }
-                .map { it.toDomain() }
+            safeApiCall {
+                api.getMarkets(
+                    vsCurrency = filters.currency.apiValue,
+                    perPage = perPage,
+                    page = page,
+                    order = filters.order.apiValue,
+                    category = filters.category.apiValue,
+                )
+            }.map { it.toDomain(filters.currency) }
         } catch (e: DataException) {
             // Сеть недоступна, но страница уже загружалась — отдаём устаревшие данные
             if (cached != null && !forceRefresh) return@withContext cached.value
             throw e
         }
         marketPages[key] = coins
-        coins.forEach { markets[MarketKey(vsCurrency, it.id)] = it }
+        coins.forEach { markets[MarketKey(filters.currency, it.id)] = it }
         coins
     }
 
@@ -61,12 +71,12 @@ class CoinRepositoryImpl(
             api.getCoinDetails(id).toDomain()
         }.filterNotNull()
 
-    override fun observeCoinMarket(id: String, vsCurrency: String): Flow<CoinMarket?> =
+    override fun observeCoinMarket(id: String, currency: VsCurrency): Flow<CoinMarket?> =
         // Обычно монета уже есть в кэше после загрузки списка, и запрос не нужен
-        cacheThenNetwork(markets, MarketKey(vsCurrency, id)) {
-            api.getMarkets(vsCurrency = vsCurrency, perPage = 1, page = 1, ids = id)
+        cacheThenNetwork(markets, MarketKey(currency, id)) {
+            api.getMarkets(vsCurrency = currency.apiValue, perPage = 1, page = 1, ids = id)
                 .firstOrNull()
-                ?.toDomain()
+                ?.toDomain(currency)
         }
 
     /**

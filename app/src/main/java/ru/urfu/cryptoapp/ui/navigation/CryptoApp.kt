@@ -12,6 +12,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavType
@@ -21,10 +22,10 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import ru.urfu.cryptoapp.R
 import ru.urfu.cryptoapp.ui.coins.details.CoinDetailsRoute
 import ru.urfu.cryptoapp.ui.coins.list.CoinListRoute
-import ru.urfu.cryptoapp.ui.common.PlaceholderScreen
+import ru.urfu.cryptoapp.ui.favorites.FavoritesRoute
+import ru.urfu.cryptoapp.ui.filters.FiltersRoute
 
 @Composable
 fun CryptoApp() {
@@ -40,28 +41,39 @@ fun CryptoApp() {
                 .padding(innerPadding)
                 .consumeWindowInsets(innerPadding),
         ) {
-            // Вкладка «Монеты»: вложенный граф список -> детали
+            // Вкладка «Монеты»: список -> детали, список -> фильтры
             navigation(startDestination = Routes.COIN_LIST, route = Routes.COINS_GRAPH) {
                 composable(Routes.COIN_LIST) {
                     CoinListRoute(
                         onCoinClick = { coinId -> navController.navigate(Routes.coinDetails(coinId)) },
+                        onFiltersClick = { navController.navigate(Routes.COIN_FILTERS) },
                     )
                 }
-                composable(
-                    route = Routes.COIN_DETAILS,
-                    arguments = listOf(navArgument(Routes.COIN_ID_ARG) { type = NavType.StringType }),
-                ) {
-                    // coinId попадает в SavedStateHandle ViewModel'и экрана деталей
-                    CoinDetailsRoute(onBack = { navController.popBackStack() })
+                composable(Routes.COIN_FILTERS) {
+                    FiltersRoute(onClose = { navController.popBackStack() })
                 }
+                coinDetails(Routes.COIN_DETAILS, navController)
             }
-            composable(Routes.FAVORITES) {
-                PlaceholderScreen(BottomTab.Favorites.icon, stringResource(R.string.favorites_placeholder))
-            }
-            composable(Routes.SETTINGS) {
-                PlaceholderScreen(BottomTab.Settings.icon, stringResource(R.string.settings_placeholder))
+            // Вкладка «Избранное»: свой список -> детали, чтобы не переключаться на вкладку «Монеты»
+            navigation(startDestination = Routes.FAVORITES_LIST, route = Routes.FAVORITES_GRAPH) {
+                composable(Routes.FAVORITES_LIST) {
+                    FavoritesRoute(
+                        onCoinClick = { coinId -> navController.navigate(Routes.favoriteDetails(coinId)) },
+                    )
+                }
+                coinDetails(Routes.FAVORITE_DETAILS, navController)
             }
         }
+    }
+}
+
+private fun NavGraphBuilder.coinDetails(route: String, navController: NavHostController) {
+    composable(
+        route = route,
+        arguments = listOf(navArgument(Routes.COIN_ID_ARG) { type = NavType.StringType }),
+    ) {
+        // coinId попадает в SavedStateHandle ViewModel'и экрана деталей
+        CoinDetailsRoute(onBack = { navController.popBackStack() })
     }
 }
 
@@ -78,7 +90,7 @@ private fun BottomBar(navController: NavHostController) {
                 onClick = {
                     if (selected) {
                         // Повторное нажатие на активную вкладку — возврат к её корню
-                        navController.popBackStack(tab.startRoute(), inclusive = false)
+                        navController.popBackStack(tab.startRoute, inclusive = false)
                     } else {
                         navController.navigate(tab.route) {
                             popUpTo(navController.graph.findStartDestination().id) { saveState = true }
@@ -92,9 +104,4 @@ private fun BottomBar(navController: NavHostController) {
             )
         }
     }
-}
-
-private fun BottomTab.startRoute(): String = when (this) {
-    BottomTab.Coins -> Routes.COIN_LIST
-    else -> route
 }

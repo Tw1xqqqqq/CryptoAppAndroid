@@ -18,6 +18,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
@@ -26,6 +28,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -49,7 +52,7 @@ import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
+import org.koin.androidx.compose.koinViewModel
 import ru.urfu.cryptoapp.R
 import ru.urfu.cryptoapp.data.mock.MockCoinData
 import ru.urfu.cryptoapp.ui.coins.model.CoinDetailsUi
@@ -69,18 +72,27 @@ import ru.urfu.cryptoapp.ui.theme.PriceUp
 @Composable
 fun CoinDetailsRoute(
     onBack: () -> Unit,
-    viewModel: CoinDetailsViewModel = viewModel(factory = CoinDetailsViewModel.Factory),
+    viewModel: CoinDetailsViewModel = koinViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    CoinDetailsScreen(state = state, onBack = onBack, onRetry = viewModel::load)
+    val isFavorite by viewModel.isFavorite.collectAsStateWithLifecycle()
+    CoinDetailsScreen(
+        state = state,
+        isFavorite = isFavorite,
+        onBack = onBack,
+        onRetry = viewModel::load,
+        onFavoriteClick = viewModel::onFavoriteClick,
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CoinDetailsScreen(
     state: CoinDetailsUiState,
+    isFavorite: Boolean,
     onBack: () -> Unit,
     onRetry: () -> Unit,
+    onFavoriteClick: () -> Unit,
 ) {
     Scaffold(
         topBar = {
@@ -93,6 +105,18 @@ fun CoinDetailsScreen(
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back))
+                    }
+                },
+                actions = {
+                    val canToggle = (state as? CoinDetailsUiState.Content)?.details?.market != null
+                    IconButton(onClick = onFavoriteClick, enabled = canToggle || isFavorite) {
+                        Icon(
+                            imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+                            contentDescription = stringResource(
+                                if (isFavorite) R.string.favorite_remove else R.string.favorite_add,
+                            ),
+                            tint = if (isFavorite) PriceDown else LocalContentColor.current,
+                        )
                     }
                 },
             )
@@ -401,8 +425,10 @@ private fun CoinDetailsPreview() {
                     market = MockCoinData.markets.first(),
                 ),
             ),
+            isFavorite = true,
             onBack = {},
             onRetry = {},
+            onFavoriteClick = {},
         )
     }
 }
