@@ -27,6 +27,7 @@ import org.koin.androidx.compose.koinViewModel
 import ru.urfu.cryptoapp.R
 import ru.urfu.cryptoapp.data.mock.MockCoinData
 import ru.urfu.cryptoapp.ui.coins.list.CoinListItem
+import ru.urfu.cryptoapp.ui.coins.model.CoinUiMapper
 import ru.urfu.cryptoapp.ui.common.PlaceholderScreen
 import ru.urfu.cryptoapp.ui.theme.CryptoAppTheme
 
@@ -86,7 +87,7 @@ fun FavoritesScreen(
 private fun FavoritesScreenPreview() {
     CryptoAppTheme(dynamicColor = false) {
         FavoritesScreen(
-            state = FavoritesUiState.Content(MockCoinData.markets.take(3)),
+            state = FavoritesUiState.Content(MockCoinData.markets.take(3).map(CoinUiMapper::toListItem)),
             onCoinClick = {},
         )
     }

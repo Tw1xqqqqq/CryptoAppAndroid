@@ -55,20 +55,19 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.koin.androidx.compose.koinViewModel
 import ru.urfu.cryptoapp.R
 import ru.urfu.cryptoapp.data.mock.MockCoinData
-import ru.urfu.cryptoapp.domain.model.CoinDetails
-import ru.urfu.cryptoapp.domain.model.CoinLinks
-import ru.urfu.cryptoapp.domain.model.CoinMarket
+import ru.urfu.cryptoapp.ui.coins.model.CoinDetailsUi
+import ru.urfu.cryptoapp.ui.coins.model.CoinMarketUi
+import ru.urfu.cryptoapp.ui.coins.model.CoinUiMapper
+import ru.urfu.cryptoapp.ui.coins.model.LabeledValueUi
+import ru.urfu.cryptoapp.ui.coins.model.LinkUi
+import ru.urfu.cryptoapp.ui.coins.model.SentimentUi
 import ru.urfu.cryptoapp.ui.common.CoinAvatar
 import ru.urfu.cryptoapp.ui.common.ErrorState
 import ru.urfu.cryptoapp.ui.common.PriceChangeChip
-import ru.urfu.cryptoapp.ui.common.formatCompact
-import ru.urfu.cryptoapp.ui.common.formatCompactMoney
-import ru.urfu.cryptoapp.ui.common.formatPrice
 import ru.urfu.cryptoapp.ui.common.messageRes
 import ru.urfu.cryptoapp.ui.theme.CryptoAppTheme
 import ru.urfu.cryptoapp.ui.theme.PriceDown
 import ru.urfu.cryptoapp.ui.theme.PriceUp
-import java.util.Locale
 
 @Composable
 fun CoinDetailsRoute(
@@ -109,7 +108,7 @@ fun CoinDetailsScreen(
                     }
                 },
                 actions = {
-                    val canToggle = (state as? CoinDetailsUiState.Content)?.market != null
+                    val canToggle = (state as? CoinDetailsUiState.Content)?.details?.market != null
                     IconButton(onClick = onFavoriteClick, enabled = canToggle || isFavorite) {
                         Icon(
                             imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
@@ -132,14 +131,14 @@ fun CoinDetailsScreen(
             when (state) {
                 CoinDetailsUiState.Loading -> CircularProgressIndicator()
                 is CoinDetailsUiState.Error -> ErrorState(stringResource(state.error.messageRes()), onRetry)
-                is CoinDetailsUiState.Content -> CoinDetailsContent(state.details, state.market)
+                is CoinDetailsUiState.Content -> CoinDetailsContent(state.details)
             }
         }
     }
 }
 
 @Composable
-private fun CoinDetailsContent(details: CoinDetails, market: CoinMarket?) {
+private fun CoinDetailsContent(details: CoinDetailsUi) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -147,18 +146,18 @@ private fun CoinDetailsContent(details: CoinDetails, market: CoinMarket?) {
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        Card { CoinHeader(details, market) }
+        Card { CoinHeader(details) }
 
-        if (market != null) {
-            Section(stringResource(R.string.section_market)) { MarketStatsGrid(market) }
+        details.market?.let { market ->
+            Section(stringResource(R.string.section_market)) { MarketStatsGrid(market.stats) }
         }
         Section(stringResource(R.string.section_about)) { AboutBlock(details) }
-        Section(stringResource(R.string.section_info)) { InfoBlock(details) }
-        details.sentimentVotesUpPercentage?.let { upPercentage ->
-            Section(stringResource(R.string.section_sentiment)) { SentimentBar(upPercentage) }
+        Section(stringResource(R.string.section_info)) { InfoBlock(details.info) }
+        details.sentiment?.let { sentiment ->
+            Section(stringResource(R.string.section_sentiment)) { SentimentBar(sentiment) }
         }
-        if (details.links.hasAny()) {
-            Section(stringResource(R.string.section_links)) { LinksBlock(details) }
+        if (details.links.isNotEmpty()) {
+            Section(stringResource(R.string.section_links)) { LinksBlock(details.links) }
         }
     }
 }
@@ -170,7 +169,8 @@ private fun CoinDetailsContent(details: CoinDetails, market: CoinMarket?) {
  * ниже — диапазон цены за 24ч на всю ширину.
  */
 @Composable
-private fun CoinHeader(details: CoinDetails, market: CoinMarket?) {
+private fun CoinHeader(details: CoinDetailsUi) {
+    val market = details.market
     ConstraintLayout(
         modifier = Modifier
             .fillMaxWidth()
@@ -202,7 +202,7 @@ private fun CoinHeader(details: CoinDetails, market: CoinMarket?) {
             },
         )
         Text(
-            text = details.symbol.uppercase(),
+            text = details.symbol,
             style = MaterialTheme.typography.titleSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.constrainAs(symbol) {
@@ -211,7 +211,7 @@ private fun CoinHeader(details: CoinDetails, market: CoinMarket?) {
             },
         )
         Text(
-            text = details.marketCapRank?.let { "#$it" } ?: "#—",
+            text = details.rank,
             style = MaterialTheme.typography.labelLarge,
             color = MaterialTheme.colorScheme.onPrimaryContainer,
             modifier = Modifier
@@ -226,7 +226,7 @@ private fun CoinHeader(details: CoinDetails, market: CoinMarket?) {
 
         if (market != null) {
             Text(
-                text = market.currentPrice.formatPrice(market.currency),
+                text = market.price,
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.SemiBold,
                 modifier = Modifier.constrainAs(price) {
@@ -235,7 +235,7 @@ private fun CoinHeader(details: CoinDetails, market: CoinMarket?) {
                 },
             )
             PriceChangeChip(
-                percent = market.priceChangePercentage24h,
+                change = market.change,
                 modifier = Modifier.constrainAs(change) {
                     centerVerticallyTo(price)
                     start.linkTo(price.end, margin = 12.dp)
@@ -255,21 +255,19 @@ private fun CoinHeader(details: CoinDetails, market: CoinMarket?) {
 }
 
 @Composable
-private fun PriceRange(market: CoinMarket, modifier: Modifier = Modifier) {
-    val span = (market.high24h - market.low24h).takeIf { it > 0 } ?: 1.0
-    val fraction = ((market.currentPrice - market.low24h) / span).toFloat().coerceIn(0f, 1f)
+private fun PriceRange(market: CoinMarketUi, modifier: Modifier = Modifier) {
     Column(modifier) {
         LinearProgressIndicator(
-            progress = { fraction },
+            progress = { market.rangeFraction },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(6.dp)
                 .clip(RoundedCornerShape(3.dp)),
         )
         Row(Modifier.fillMaxWidth().padding(top = 4.dp), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text(market.low24h.formatPrice(market.currency), style = MaterialTheme.typography.labelSmall)
+            Text(market.low24h, style = MaterialTheme.typography.labelSmall)
             Text("24h", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Text(market.high24h.formatPrice(market.currency), style = MaterialTheme.typography.labelSmall)
+            Text(market.high24h, style = MaterialTheme.typography.labelSmall)
         }
     }
 }
@@ -280,30 +278,20 @@ private fun PriceRange(market: CoinMarket, modifier: Modifier = Modifier) {
  * самой высокой ячейкой.
  */
 @Composable
-private fun MarketStatsGrid(market: CoinMarket) {
-    val notLimited = stringResource(R.string.not_limited)
-    val cells = listOf(
-        stringResource(R.string.market_cap) to market.marketCap.formatCompactMoney(market.currency),
-        stringResource(R.string.volume_24h) to market.totalVolume.formatCompactMoney(market.currency),
-        stringResource(R.string.circulating_supply) to market.circulatingSupply.formatCompact(),
-        stringResource(R.string.max_supply) to (market.maxSupply?.formatCompact() ?: notLimited),
-        stringResource(R.string.high_24h) to market.high24h.formatPrice(market.currency),
-        stringResource(R.string.low_24h) to market.low24h.formatPrice(market.currency),
-    )
-
+private fun MarketStatsGrid(cells: List<LabeledValueUi>) {
     ConstraintLayout(Modifier.fillMaxWidth()) {
         val middle = createGuidelineFromStart(0.5f)
         val refs = cells.map { createRef() }
         // Барьер под каждой строкой (кроме последней) — от него отсчитывается следующая строка
         val rowBottoms = refs.chunked(2).dropLast(1).map { rowRefs -> createBottomBarrier(*rowRefs.toTypedArray()) }
 
-        cells.forEachIndexed { index, (label, value) ->
+        cells.forEachIndexed { index, cell ->
             val row = index / 2
             val isLeft = index % 2 == 0
             val rowTop = if (row == 0) null else rowBottoms[row - 1]
             StatCell(
-                label = label,
-                value = value,
+                label = stringResource(cell.label),
+                value = cell.value,
                 modifier = Modifier.constrainAs(refs[index]) {
                     if (rowTop == null) top.linkTo(parent.top) else top.linkTo(rowTop, margin = 12.dp)
                     if (isLeft) {
@@ -335,7 +323,7 @@ private fun StatCell(label: String, value: String, modifier: Modifier = Modifier
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun AboutBlock(details: CoinDetails) {
+private fun AboutBlock(details: CoinDetailsUi) {
     var expanded by rememberSaveable { mutableStateOf(false) }
     Column(Modifier.animateContentSize()) {
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -359,13 +347,12 @@ private fun AboutBlock(details: CoinDetails) {
 }
 
 @Composable
-private fun InfoBlock(details: CoinDetails) {
+private fun InfoBlock(rows: List<LabeledValueUi>) {
     Column {
-        InfoRow(stringResource(R.string.hashing_algorithm), details.hashingAlgorithm ?: "—")
-        HorizontalDivider()
-        InfoRow(stringResource(R.string.genesis_date), details.genesisDate ?: "—")
-        HorizontalDivider()
-        InfoRow(stringResource(R.string.watchlist_users), details.watchlistUsers?.toDouble()?.formatCompact() ?: "—")
+        rows.forEachIndexed { index, row ->
+            if (index > 0) HorizontalDivider()
+            InfoRow(stringResource(row.label), row.value)
+        }
     }
 }
 
@@ -383,8 +370,8 @@ private fun InfoRow(label: String, value: String) {
 }
 
 @Composable
-private fun SentimentBar(upPercentage: Double) {
-    val up = upPercentage.toFloat().coerceIn(0f, 100f)
+private fun SentimentBar(sentiment: SentimentUi) {
+    val up = sentiment.upFraction
     Column {
         Row(
             Modifier
@@ -393,40 +380,31 @@ private fun SentimentBar(upPercentage: Double) {
                 .clip(RoundedCornerShape(5.dp)),
         ) {
             if (up > 0f) Box(Modifier.weight(up).fillMaxSize().background(PriceUp))
-            if (up < 100f) Box(Modifier.weight(100f - up).fillMaxSize().background(PriceDown))
+            if (up < 1f) Box(Modifier.weight(1f - up).fillMaxSize().background(PriceDown))
         }
         Row(Modifier.fillMaxWidth().padding(top = 4.dp), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text("▲ %.1f%%".format(Locale.US, up), color = PriceUp, style = MaterialTheme.typography.labelMedium)
-            Text("▼ %.1f%%".format(Locale.US, 100f - up), color = PriceDown, style = MaterialTheme.typography.labelMedium)
+            Text(sentiment.upText, color = PriceUp, style = MaterialTheme.typography.labelMedium)
+            Text(sentiment.downText, color = PriceDown, style = MaterialTheme.typography.labelMedium)
         }
     }
 }
 
 @Composable
-private fun LinksBlock(details: CoinDetails) {
+private fun LinksBlock(links: List<LinkUi>) {
     val uriHandler = LocalUriHandler.current
-    val links = listOfNotNull(
-        details.links.homepage?.let { stringResource(R.string.link_homepage) to it },
-        details.links.blockchainSite?.let { stringResource(R.string.link_explorer) to it },
-        details.links.subreddit?.let { stringResource(R.string.link_reddit) to it },
-        details.links.github?.let { stringResource(R.string.link_github) to it },
-    )
     Column {
-        links.forEach { (title, url) ->
+        links.forEach { link ->
             ListItem(
-                headlineContent = { Text(title) },
-                supportingContent = { Text(url, maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                headlineContent = { Text(stringResource(link.title)) },
+                supportingContent = { Text(link.url, maxLines = 1, overflow = TextOverflow.Ellipsis) },
                 modifier = Modifier
                     .clip(RoundedCornerShape(8.dp))
                     // runCatching — чтобы не упасть, если на устройстве нет браузера
-                    .clickable { runCatching { uriHandler.openUri(url) } },
+                    .clickable { runCatching { uriHandler.openUri(link.url) } },
             )
         }
     }
 }
-
-private fun CoinLinks.hasAny(): Boolean =
-    listOf(homepage, blockchainSite, subreddit, github).any { it != null }
 
 @Composable
 private fun Section(title: String, content: @Composable () -> Unit) {
@@ -442,8 +420,10 @@ private fun CoinDetailsPreview() {
     CryptoAppTheme(dynamicColor = false) {
         CoinDetailsScreen(
             state = CoinDetailsUiState.Content(
-                details = MockCoinData.details("bitcoin")!!,
-                market = MockCoinData.markets.first(),
+                CoinUiMapper.toDetails(
+                    details = MockCoinData.details("bitcoin")!!,
+                    market = MockCoinData.markets.first(),
+                ),
             ),
             isFavorite = true,
             onBack = {},

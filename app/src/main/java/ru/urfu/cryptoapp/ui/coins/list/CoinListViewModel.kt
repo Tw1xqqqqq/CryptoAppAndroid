@@ -11,15 +11,16 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import ru.urfu.cryptoapp.domain.model.CoinFilters
-import ru.urfu.cryptoapp.domain.model.CoinMarket
 import ru.urfu.cryptoapp.domain.model.DataError
 import ru.urfu.cryptoapp.domain.model.toDataError
 import ru.urfu.cryptoapp.domain.usecase.GetCoinMarketsUseCase
 import ru.urfu.cryptoapp.domain.usecase.ObserveFiltersUseCase
+import ru.urfu.cryptoapp.ui.coins.model.CoinListItemUi
+import ru.urfu.cryptoapp.ui.coins.model.CoinUiMapper
 import ru.urfu.cryptoapp.ui.filters.FilterBadgeCache
 
 data class CoinListUiState(
-    val coins: List<CoinMarket> = emptyList(),
+    val coins: List<CoinListItemUi> = emptyList(),
     val isLoading: Boolean = true,       // первая страница (true, пока не прочитаны фильтры)
     val isLoadingMore: Boolean = false,  // следующие страницы
     val isRefreshing: Boolean = false,   // pull-to-refresh
@@ -73,7 +74,7 @@ class CoinListViewModel(
                 nextPage = page + 1
                 _uiState.update {
                     it.copy(
-                        coins = it.coins + coins,
+                        coins = it.coins + coins.map(CoinUiMapper::toListItem),
                         isLoading = false,
                         isLoadingMore = false,
                         endReached = coins.size < PAGE_SIZE,
@@ -101,7 +102,7 @@ class CoinListViewModel(
                 nextPage = 2
                 _uiState.update {
                     CoinListUiState(
-                        coins = coins,
+                        coins = coins.map(CoinUiMapper::toListItem),
                         isLoading = false,
                         endReached = coins.size < PAGE_SIZE,
                         showFilterBadge = it.showFilterBadge,

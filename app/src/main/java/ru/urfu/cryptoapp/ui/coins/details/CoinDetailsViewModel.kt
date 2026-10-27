@@ -13,7 +13,6 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import ru.urfu.cryptoapp.domain.model.CoinDetails
 import ru.urfu.cryptoapp.domain.model.CoinMarket
 import ru.urfu.cryptoapp.domain.model.DataError
 import ru.urfu.cryptoapp.domain.model.toDataError
@@ -21,11 +20,13 @@ import ru.urfu.cryptoapp.domain.usecase.AddFavoriteUseCase
 import ru.urfu.cryptoapp.domain.usecase.GetCoinOverviewUseCase
 import ru.urfu.cryptoapp.domain.usecase.ObserveIsFavoriteUseCase
 import ru.urfu.cryptoapp.domain.usecase.RemoveFavoriteUseCase
+import ru.urfu.cryptoapp.ui.coins.model.CoinDetailsUi
+import ru.urfu.cryptoapp.ui.coins.model.CoinUiMapper
 import ru.urfu.cryptoapp.ui.navigation.Routes
 
 sealed interface CoinDetailsUiState {
     data object Loading : CoinDetailsUiState
-    data class Content(val details: CoinDetails, val market: CoinMarket?) : CoinDetailsUiState
+    data class Content(val details: CoinDetailsUi) : CoinDetailsUiState
     data class Error(val error: DataError) : CoinDetailsUiState
 }
 
@@ -47,6 +48,9 @@ class CoinDetailsViewModel(
     val isFavorite: StateFlow<Boolean> = observeIsFavorite(coinId)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
 
+    /** Доменные рыночные данные — не для экрана, а для сохранения в избранное. */
+    private var market: CoinMarket? = null
+
     private var loadJob: Job? = null
 
     init {
@@ -58,7 +62,10 @@ class CoinDetailsViewModel(
         _uiState.value = CoinDetailsUiState.Loading
         // Flow может отдать сначала кэш, а затем свежие данные — экран просто перерисуется
         loadJob = getCoinOverview(coinId)
-            .onEach { _uiState.value = CoinDetailsUiState.Content(it.details, it.market) }
+            .onEach {
+                market = it.market
+                _uiState.value = CoinDetailsUiState.Content(CoinUiMapper.toDetails(it.details, it.market))
+            }
             .catch { _uiState.value = CoinDetailsUiState.Error(it.toDataError()) }
             .launchIn(viewModelScope)
     }
@@ -72,7 +79,7 @@ class CoinDetailsViewModel(
             viewModelScope.launch { removeFavorite(coinId) }
             return
         }
-        val market = (_uiState.value as? CoinDetailsUiState.Content)?.market ?: return
+        val market = market ?: return
         viewModelScope.launch { addFavorite(market) }
     }
 }

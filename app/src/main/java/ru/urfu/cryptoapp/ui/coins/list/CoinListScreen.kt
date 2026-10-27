@@ -46,13 +46,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.koin.androidx.compose.koinViewModel
 import ru.urfu.cryptoapp.R
 import ru.urfu.cryptoapp.data.mock.MockCoinData
-import ru.urfu.cryptoapp.domain.model.CoinMarket
+import ru.urfu.cryptoapp.ui.coins.model.CoinListItemUi
+import ru.urfu.cryptoapp.ui.coins.model.CoinUiMapper
 import ru.urfu.cryptoapp.ui.common.CoinAvatar
 import ru.urfu.cryptoapp.ui.common.ErrorState
 import ru.urfu.cryptoapp.ui.common.PriceChangeChip
 import ru.urfu.cryptoapp.ui.common.PlaceholderScreen
-import ru.urfu.cryptoapp.ui.common.formatCompactMoney
-import ru.urfu.cryptoapp.ui.common.formatPrice
 import ru.urfu.cryptoapp.ui.common.messageRes
 import ru.urfu.cryptoapp.ui.theme.CryptoAppTheme
 
@@ -190,14 +189,14 @@ private fun PaginationEffect(listState: LazyListState, onLoadMore: () -> Unit) {
 private const val PREFETCH_DISTANCE = 3
 
 @Composable
-fun CoinListItem(coin: CoinMarket, onClick: () -> Unit, modifier: Modifier = Modifier) {
+fun CoinListItem(coin: CoinListItemUi, onClick: () -> Unit, modifier: Modifier = Modifier) {
     Card(onClick = onClick, modifier = modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier.padding(12.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                text = coin.marketCapRank.toString(),
+                text = coin.rank,
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.width(28.dp),
@@ -215,18 +214,18 @@ fun CoinListItem(coin: CoinMarket, onClick: () -> Unit, modifier: Modifier = Mod
                     overflow = TextOverflow.Ellipsis,
                 )
                 Text(
-                    text = "${coin.symbol.uppercase()} · ${coin.marketCap.formatCompactMoney(coin.currency)}",
+                    text = coin.subtitle,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
             Column(horizontalAlignment = Alignment.End) {
                 Text(
-                    text = coin.currentPrice.formatPrice(coin.currency),
+                    text = coin.price,
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.SemiBold,
                 )
-                PriceChangeChip(percent = coin.priceChangePercentage24h)
+                PriceChangeChip(change = coin.change)
             }
         }
     }
@@ -237,7 +236,7 @@ fun CoinListItem(coin: CoinMarket, onClick: () -> Unit, modifier: Modifier = Mod
 private fun CoinListScreenPreview() {
     CryptoAppTheme(dynamicColor = false) {
         CoinListScreen(
-            state = CoinListUiState(coins = MockCoinData.markets.take(6), isLoading = false, showFilterBadge = true),
+            state = CoinListUiState(coins = MockCoinData.markets.take(6).map(CoinUiMapper::toListItem), isLoading = false, showFilterBadge = true),
             onCoinClick = {},
             onFiltersClick = {},
             onLoadMore = {},

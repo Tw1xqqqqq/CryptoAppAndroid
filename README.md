@@ -53,6 +53,7 @@ data/cache          MemoryCache — кэш ответов сети в памят
 data/repository     CoinRepositoryImpl, FavoritesRepositoryImpl
 di                  модули Koin, запускаются в CryptoApplication
 ui/coins            список и детали
+ui/coins/model      UI-модели и CoinUiMapper: ViewModel отдаёт экрану уже отформатированные строки
 ui/filters          экран фильтров, FilterBadgeCache
 ui/favorites        экран избранного
 ```
