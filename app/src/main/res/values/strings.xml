@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">CryptoApp</string>
+
+    <string name="tab_coins">Монеты</string>
+    <string name="tab_favorites">Избранное</string>
+    <string name="tab_settings">Настройки</string>
+
+    <string name="coins_title">Криптовалюты</string>
+    <string name="coin_details_title">Детали</string>
+    <string name="back">Назад</string>
+    <string name="retry">Повторить</string>
+    <string name="error_generic">Не удалось загрузить данные</string>
+
+    <string name="market_cap">Капитализация</string>
+    <string name="volume_24h">Объём 24ч</string>
+    <string name="circulating_supply">В обращении</string>
+    <string name="max_supply">Макс. эмиссия</string>
+    <string name="high_24h">Максимум 24ч</string>
+    <string name="low_24h">Минимум 24ч</string>
+
+    <string name="section_market">Рынок</string>
+    <string name="section_about">О монете</string>
+    <string name="section_info">Информация</string>
+    <string name="section_sentiment">Настроение сообщества</string>
+    <string name="section_links">Ссылки</string>
+    <string name="show_more">Показать полностью</string>
+    <string name="show_less">Свернуть</string>
+    <string name="hashing_algorithm">Алгоритм</string>
+    <string name="genesis_date">Дата запуска</string>
+    <string name="watchlist_users">В вотчлистах</string>
+    <string name="link_homepage">Сайт</string>
+    <string name="link_explorer">Обозреватель блоков</string>
+    <string name="link_reddit">Reddit</string>
+    <string name="link_github">GitHub</string>
+
+    <string name="favorites_placeholder">Здесь появятся избранные монеты</string>
+    <string name="settings_placeholder">Здесь появятся настройки (валюта, сортировка)</string>
+</resources>
