@@ -10,11 +10,12 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import ru.urfu.cryptoapp.di.AppContainer
-import ru.urfu.cryptoapp.domain.model.CoinMarket
 import ru.urfu.cryptoapp.domain.repository.CoinRepository
+import ru.urfu.cryptoapp.ui.coins.model.CoinListItemUi
+import ru.urfu.cryptoapp.ui.coins.model.CoinUiMapper
 
 data class CoinListUiState(
-    val coins: List<CoinMarket> = emptyList(),
+    val coins: List<CoinListItemUi> = emptyList(),
     val isLoading: Boolean = false,      // первая страница
     val isLoadingMore: Boolean = false,  // следующие страницы
     val endReached: Boolean = false,
@@ -48,7 +49,7 @@ class CoinListViewModel(
                     nextPage++
                     _uiState.update {
                         it.copy(
-                            coins = it.coins + page,
+                            coins = it.coins + page.map(CoinUiMapper::toListItem),
                             isLoading = false,
                             isLoadingMore = false,
                             endReached = page.size < PAGE_SIZE,

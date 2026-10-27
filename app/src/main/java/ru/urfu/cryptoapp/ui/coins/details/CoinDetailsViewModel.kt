@@ -11,14 +11,14 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import ru.urfu.cryptoapp.di.AppContainer
-import ru.urfu.cryptoapp.domain.model.CoinDetails
-import ru.urfu.cryptoapp.domain.model.CoinMarket
 import ru.urfu.cryptoapp.domain.repository.CoinRepository
+import ru.urfu.cryptoapp.ui.coins.model.CoinDetailsUi
+import ru.urfu.cryptoapp.ui.coins.model.CoinUiMapper
 import ru.urfu.cryptoapp.ui.navigation.Routes
 
 sealed interface CoinDetailsUiState {
     data object Loading : CoinDetailsUiState
-    data class Content(val details: CoinDetails, val market: CoinMarket?) : CoinDetailsUiState
+    data class Content(val details: CoinDetailsUi) : CoinDetailsUiState
     data class Error(val message: String) : CoinDetailsUiState
 }
 
@@ -41,10 +41,9 @@ class CoinDetailsViewModel(
         _uiState.value = CoinDetailsUiState.Loading
         viewModelScope.launch {
             _uiState.value = runCatching {
-                CoinDetailsUiState.Content(
-                    details = repository.getCoinDetails(coinId),
-                    market = repository.getCoinMarket(coinId),
-                )
+                val details = repository.getCoinDetails(coinId)
+                val market = repository.getCoinMarket(coinId)
+                CoinDetailsUiState.Content(CoinUiMapper.toDetails(details, market))
             }.getOrElse { CoinDetailsUiState.Error(it.message.orEmpty()) }
         }
     }

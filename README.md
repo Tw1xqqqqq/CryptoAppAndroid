@@ -6,6 +6,7 @@
 - Jetpack Compose, Single Activity (`MainActivity` + `NavHost`)
 - Навигация: `navigation-compose` (вложенный граф для вкладки «Монеты»)
 - Архитектура: **MVVM** — `ViewModel` + `StateFlow<UiState>`, репозиторий за интерфейсом
+- ViewModel превращает доменные модели в UI-модели с уже отформатированными строками (цена, капитализация, проценты) — экран только отображает их
 - Список: `LazyColumn` с подгрузкой страниц (`page` / `per_page`, как в `/coins/markets`)
 - Детали: `ConstraintLayout` (compose) — барьеры, направляющая (guideline), `fillToConstraints`
 
@@ -19,6 +20,7 @@ di                  AppContainer — ручной DI
 ui/navigation       Routes, BottomTab, CryptoApp (Scaffold + NavigationBar + NavHost)
 ui/coins/list       CoinListViewModel, CoinListScreen
 ui/coins/details    CoinDetailsViewModel (coinId из SavedStateHandle), CoinDetailsScreen
+ui/coins/model      UI-модели и CoinUiMapper — ViewModel отдаёт экрану готовые строки
 ui/common           общие компоненты, форматирование чисел
 ```
 
