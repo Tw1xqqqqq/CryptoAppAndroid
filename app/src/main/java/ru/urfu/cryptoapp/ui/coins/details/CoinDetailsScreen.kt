@@ -61,6 +61,7 @@ import ru.urfu.cryptoapp.ui.coins.model.SentimentUi
 import ru.urfu.cryptoapp.ui.common.CoinAvatar
 import ru.urfu.cryptoapp.ui.common.ErrorState
 import ru.urfu.cryptoapp.ui.common.PriceChangeChip
+import ru.urfu.cryptoapp.ui.common.messageRes
 import ru.urfu.cryptoapp.ui.theme.CryptoAppTheme
 import ru.urfu.cryptoapp.ui.theme.PriceDown
 import ru.urfu.cryptoapp.ui.theme.PriceUp
@@ -105,7 +106,7 @@ fun CoinDetailsScreen(
         ) {
             when (state) {
                 CoinDetailsUiState.Loading -> CircularProgressIndicator()
-                is CoinDetailsUiState.Error -> ErrorState(stringResource(R.string.error_generic), onRetry)
+                is CoinDetailsUiState.Error -> ErrorState(stringResource(state.error.messageRes()), onRetry)
                 is CoinDetailsUiState.Content -> CoinDetailsContent(state.details)
             }
         }
@@ -128,8 +129,12 @@ private fun CoinDetailsContent(details: CoinDetailsUi) {
         }
         Section(stringResource(R.string.section_about)) { AboutBlock(details) }
         Section(stringResource(R.string.section_info)) { InfoBlock(details.info) }
-        Section(stringResource(R.string.section_sentiment)) { SentimentBar(details.sentiment) }
-        Section(stringResource(R.string.section_links)) { LinksBlock(details.links) }
+        details.sentiment?.let { sentiment ->
+            Section(stringResource(R.string.section_sentiment)) { SentimentBar(sentiment) }
+        }
+        if (details.links.isNotEmpty()) {
+            Section(stringResource(R.string.section_links)) { LinksBlock(details.links) }
+        }
     }
 }
 
@@ -302,15 +307,17 @@ private fun AboutBlock(details: CoinDetailsUi) {
                 AssistChip(onClick = {}, label = { Text(category) })
             }
         }
-        Text(
-            text = details.description,
-            style = MaterialTheme.typography.bodyMedium,
-            maxLines = if (expanded) Int.MAX_VALUE else 4,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.padding(top = 8.dp),
-        )
-        TextButton(onClick = { expanded = !expanded }) {
-            Text(stringResource(if (expanded) R.string.show_less else R.string.show_more))
+        if (details.description.isNotBlank()) {
+            Text(
+                text = details.description,
+                style = MaterialTheme.typography.bodyMedium,
+                maxLines = if (expanded) Int.MAX_VALUE else 4,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.padding(top = 8.dp),
+            )
+            TextButton(onClick = { expanded = !expanded }) {
+                Text(stringResource(if (expanded) R.string.show_less else R.string.show_more))
+            }
         }
     }
 }

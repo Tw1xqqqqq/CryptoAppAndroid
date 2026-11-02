@@ -29,13 +29,13 @@ data class CoinDetailsUi(
     val name: String,
     val symbol: String,     // "BTC"
     val imageUrl: String,
-    val rank: String,       // "#1"
+    val rank: String,       // "#1" или "#—"
     val market: CoinMarketUi?,
     val categories: List<String>,
     val description: String,
     val info: List<LabeledValueUi>,
-    val sentiment: SentimentUi,
-    val links: List<LinkUi>,
+    val sentiment: SentimentUi?, // null — голосов нет, секция скрывается
+    val links: List<LinkUi>,     // пустой — секция скрывается
 )
 
 /** Рыночный блок деталей: цена, диапазон за 24ч и сетка показателей. */

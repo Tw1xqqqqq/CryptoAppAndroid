@@ -4,7 +4,7 @@ import ru.urfu.cryptoapp.domain.model.CoinDetails
 import ru.urfu.cryptoapp.domain.model.CoinLinks
 import ru.urfu.cryptoapp.domain.model.CoinMarket
 
-/** Моковые данные в формате CoinGecko. Значения приблизительные. */
+/** Моковые данные в формате CoinGecko для Compose-превью. Значения приблизительные. */
 object MockCoinData {
 
     private const val IMG = "https://coin-images.coingecko.com/coins/images"
