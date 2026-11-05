@@ -10,5 +10,5 @@ fun DataError.messageRes(): Int = when (this) {
     DataError.RATE_LIMIT -> R.string.error_rate_limit
     DataError.NOT_FOUND -> R.string.error_not_found
     DataError.SERVER -> R.string.error_server
-    DataError.UNKNOWN -> R.string.error_generic
+    DataError.FILE_TOO_LARGE, DataError.UNKNOWN -> R.string.error_generic
 }

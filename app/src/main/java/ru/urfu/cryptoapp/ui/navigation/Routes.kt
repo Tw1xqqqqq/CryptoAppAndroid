@@ -4,6 +4,7 @@ import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.ui.graphics.vector.ImageVector
 import ru.urfu.cryptoapp.R
 
@@ -20,6 +21,10 @@ object Routes {
     const val FAVORITES_LIST = "favorites/list"
     const val FAVORITE_DETAILS = "favorites/details/{$COIN_ID_ARG}"
     fun favoriteDetails(coinId: String) = "favorites/details/$coinId"
+
+    const val PROFILE_GRAPH = "profile"
+    const val PROFILE_VIEW = "profile/view"
+    const val PROFILE_EDIT = "profile/edit"
 }
 
 /** Вкладки нижней навигации. route — вложенный граф вкладки, startRoute — его корневой экран. */
@@ -31,4 +36,5 @@ enum class BottomTab(
 ) {
     Coins(Routes.COINS_GRAPH, Routes.COIN_LIST, R.string.tab_coins, Icons.AutoMirrored.Filled.List),
     Favorites(Routes.FAVORITES_GRAPH, Routes.FAVORITES_LIST, R.string.tab_favorites, Icons.Filled.Favorite),
+    Profile(Routes.PROFILE_GRAPH, Routes.PROFILE_VIEW, R.string.tab_profile, Icons.Filled.Person),
 }

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- Снимок для приложения камеры и скачанное резюме для просмотрщика -->
+    <cache-path name="camera" path="camera/" />
+    <cache-path name="documents" path="documents/" />
+</paths>

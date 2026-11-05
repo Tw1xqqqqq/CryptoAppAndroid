@@ -4,11 +4,13 @@
 
     <string name="tab_coins">Монеты</string>
     <string name="tab_favorites">Избранное</string>
+    <string name="tab_profile">Профиль</string>
 
     <string name="coins_title">Криптовалюты</string>
     <string name="coin_details_title">Детали</string>
     <string name="back">Назад</string>
     <string name="retry">Повторить</string>
+    <string name="cancel">Отмена</string>
     <string name="error_generic">Не удалось загрузить данные</string>
     <string name="error_network">Нет подключения к интернету.\nПроверьте сеть и повторите попытку.</string>
     <string name="error_rate_limit">Слишком много запросов к CoinGecko.\nПодождите минуту и повторите.</string>
@@ -43,6 +45,26 @@
     <string name="favorites_hint">Сохранено на устройстве и доступно без интернета. Цены — на момент добавления.</string>
     <string name="favorite_add">Добавить в избранное</string>
     <string name="favorite_remove">Убрать из избранного</string>
+
+    <string name="profile_edit">Редактирование</string>
+    <string name="profile_name_empty">Имя не указано</string>
+    <string name="profile_avatar">Аватарка</string>
+    <string name="profile_resume">Резюме</string>
+    <string name="profile_full_name">ФИО</string>
+    <string name="profile_position">Должность</string>
+    <string name="profile_resume_url">Ссылка на резюме</string>
+    <string name="profile_resume_url_hint">Например, www.example.com/cv.pdf</string>
+    <string name="profile_resume_url_invalid">Нужна ссылка вида https://example.com/cv.pdf</string>
+    <string name="profile_change_photo">Выбрать фото</string>
+    <string name="profile_source_gallery">Галерея</string>
+    <string name="profile_source_camera">Камера</string>
+    <string name="profile_no_camera">На устройстве нет приложения камеры</string>
+    <string name="profile_photo_failed">Не удалось загрузить фото</string>
+    <string name="profile_save_failed">Не удалось сохранить профиль</string>
+    <string name="resume_not_found">Файл по этой ссылке не найден</string>
+    <string name="resume_too_large">Файл слишком большой (больше 50 МБ)</string>
+    <string name="resume_download_failed">Не удалось скачать резюме</string>
+    <string name="resume_no_viewer">Нет приложения, чтобы открыть этот файл</string>
 
     <string name="filters_title">Фильтры</string>
     <string name="filters_reset">Сбросить</string>

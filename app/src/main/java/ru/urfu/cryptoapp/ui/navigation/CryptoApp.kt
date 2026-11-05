@@ -26,6 +26,8 @@ import ru.urfu.cryptoapp.ui.coins.details.CoinDetailsRoute
 import ru.urfu.cryptoapp.ui.coins.list.CoinListRoute
 import ru.urfu.cryptoapp.ui.favorites.FavoritesRoute
 import ru.urfu.cryptoapp.ui.filters.FiltersRoute
+import ru.urfu.cryptoapp.ui.profile.EditProfileRoute
+import ru.urfu.cryptoapp.ui.profile.ProfileRoute
 
 @Composable
 fun CryptoApp() {
@@ -62,6 +64,15 @@ fun CryptoApp() {
                     )
                 }
                 coinDetails(Routes.FAVORITE_DETAILS, navController)
+            }
+            // Вкладка «Профиль»: профиль -> редактирование
+            navigation(startDestination = Routes.PROFILE_VIEW, route = Routes.PROFILE_GRAPH) {
+                composable(Routes.PROFILE_VIEW) {
+                    ProfileRoute(onEditClick = { navController.navigate(Routes.PROFILE_EDIT) })
+                }
+                composable(Routes.PROFILE_EDIT) {
+                    EditProfileRoute(onClose = { navController.popBackStack() })
+                }
             }
         }
     }
