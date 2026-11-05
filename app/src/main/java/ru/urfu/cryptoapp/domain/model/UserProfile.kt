@@ -6,6 +6,7 @@ data class UserProfile(
     val position: String = "",
     val avatarUri: String? = null, // URI файла аватарки на устройстве
     val resumeUrl: String = "",    // ссылка на файл резюме/портфолио в сети
+    val lectureTime: String = "",  // время любимой пары, HH:mm
 )
 
 /** Скачанный документ, готовый к открытию в другом приложении. */
