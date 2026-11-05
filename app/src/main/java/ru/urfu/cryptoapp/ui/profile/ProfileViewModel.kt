@@ -26,6 +26,7 @@ data class OpenDocumentUi(
 data class ProfileUiState(
     val fullName: String? = null, // null — ещё не заполнено, экран покажет подсказку
     val position: String? = null,
+    val lectureTime: String? = null,
     val avatarUri: String? = null,
     val hasResume: Boolean = false,
     val isDownloading: Boolean = false,
@@ -50,6 +51,7 @@ class ProfileViewModel(
         ProfileUiState(
             fullName = profile.fullName.ifBlank { null },
             position = profile.position.ifBlank { null },
+            lectureTime = profile.lectureTime.ifBlank { null },
             avatarUri = profile.avatarUri,
             hasResume = profile.resumeUrl.isNotBlank(),
             isDownloading = download.isDownloading,

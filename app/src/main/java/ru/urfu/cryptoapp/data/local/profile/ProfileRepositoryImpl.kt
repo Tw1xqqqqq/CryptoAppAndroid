@@ -26,6 +26,7 @@ data class ProfileDto(
     val position: String = "",
     val avatarUri: String? = null,
     val resumeUrl: String = "",
+    val lectureTime: String = "",
 )
 
 object ProfileSerializer : Serializer<ProfileDto> {
@@ -63,6 +64,7 @@ private fun ProfileDto.toDomain() = UserProfile(
     position = position,
     avatarUri = avatarUri,
     resumeUrl = resumeUrl,
+    lectureTime = lectureTime,
 )
 
 private fun UserProfile.toDto() = ProfileDto(
@@ -70,4 +72,5 @@ private fun UserProfile.toDto() = ProfileDto(
     position = position,
     avatarUri = avatarUri,
     resumeUrl = resumeUrl,
+    lectureTime = lectureTime,
 )

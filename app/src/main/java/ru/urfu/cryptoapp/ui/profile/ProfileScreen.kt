@@ -125,6 +125,12 @@ fun ProfileScreen(
             state.position?.let { position ->
                 Text(position, style = MaterialTheme.typography.bodyMedium, textAlign = TextAlign.Center)
             }
+            state.lectureTime?.let { time ->
+                Text(
+                    text = stringResource(R.string.profile_lecture_time_value, time),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            }
             if (state.hasResume) {
                 Button(onClick = onResumeClick, enabled = !state.isDownloading) {
                     if (state.isDownloading) {
@@ -170,7 +176,7 @@ fun ProfileAvatar(avatarUri: String?, size: Dp, modifier: Modifier = Modifier) {
 private fun ProfileScreenPreview() {
     CryptoAppTheme(dynamicColor = false) {
         ProfileScreen(
-            state = ProfileUiState(fullName = "Captain Smollett", position = "Старший разработчик", hasResume = true),
+            state = ProfileUiState(fullName = "Captain Smollett", position = "Старший разработчик", lectureTime = "18:43", hasResume = true),
             onEditClick = {},
             onResumeClick = {},
             onMessageShown = {},

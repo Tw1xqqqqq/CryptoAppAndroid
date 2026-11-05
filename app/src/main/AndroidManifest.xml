@@ -5,6 +5,15 @@
     <!-- Запросы к CoinGecko API и загрузка иконок монет (Coil) -->
     <uses-permission android:name="android.permission.INTERNET" />
 
+    <!-- Показ напоминания о паре: на Android 13+ пользователь выдаёт разрешение в диалоге -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!-- Напоминание должно сработать точно в указанное время -->
+    <uses-permission
+        android:name="android.permission.SCHEDULE_EXACT_ALARM"
+        android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+
     <application
         android:name=".CryptoApplication"
         android:allowBackup="true"
@@ -19,6 +28,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <receiver
+            android:name=".data.notification.LectureReminderReceiver"
+            android:exported="false" />
 
         <!-- Доступ к снимку для приложения камеры и к резюме для просмотрщика -->
         <provider

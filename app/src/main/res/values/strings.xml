@@ -66,6 +66,18 @@
     <string name="resume_download_failed">Не удалось скачать резюме</string>
     <string name="resume_no_viewer">Нет приложения, чтобы открыть этот файл</string>
 
+    <string name="profile_lecture_time">Время любимой пары</string>
+    <string name="profile_lecture_time_value">Любимая пара: %1$s</string>
+    <string name="profile_lecture_time_invalid">Некорректный формат времени</string>
+    <string name="profile_pick_time">Выбрать время на часах</string>
+    <string name="reminder_set">Напоминание установлено</string>
+    <string name="reminder_time_passed">Это время сегодня уже прошло, напоминания не будет</string>
+    <string name="reminder_notifications_denied">Уведомления запрещены, напоминание не появится</string>
+    <string name="reminder_channel_name">Напоминания о паре</string>
+    <string name="reminder_title">Сработало напоминание</string>
+    <string name="reminder_text">Пора на пару, %1$s!</string>
+    <string name="reminder_text_no_name">Пора на пару!</string>
+
     <string name="filters_title">Фильтры</string>
     <string name="filters_reset">Сбросить</string>
     <string name="filters_apply">Готово</string>

@@ -28,6 +28,7 @@ import ru.urfu.cryptoapp.data.local.prefs.FiltersRepositoryImpl
 import ru.urfu.cryptoapp.data.local.profile.ProfileDto
 import ru.urfu.cryptoapp.data.local.profile.ProfileRepositoryImpl
 import ru.urfu.cryptoapp.data.local.profile.ProfileSerializer
+import ru.urfu.cryptoapp.data.notification.LectureReminderSchedulerImpl
 import ru.urfu.cryptoapp.data.remote.ApiKeyInterceptor
 import ru.urfu.cryptoapp.data.remote.CoinGeckoApi
 import ru.urfu.cryptoapp.data.repository.AvatarRepositoryImpl
@@ -39,6 +40,7 @@ import ru.urfu.cryptoapp.domain.repository.CoinRepository
 import ru.urfu.cryptoapp.domain.repository.DocumentRepository
 import ru.urfu.cryptoapp.domain.repository.FavoritesRepository
 import ru.urfu.cryptoapp.domain.repository.FiltersRepository
+import ru.urfu.cryptoapp.domain.repository.LectureReminderScheduler
 import ru.urfu.cryptoapp.domain.repository.ProfileRepository
 import ru.urfu.cryptoapp.domain.usecase.AddFavoriteUseCase
 import ru.urfu.cryptoapp.domain.usecase.CreateCameraCaptureUriUseCase
@@ -55,6 +57,7 @@ import ru.urfu.cryptoapp.domain.usecase.SaveFiltersUseCase
 import ru.urfu.cryptoapp.domain.usecase.ObserveProfileUseCase
 import ru.urfu.cryptoapp.domain.usecase.RemoveFavoriteUseCase
 import ru.urfu.cryptoapp.domain.usecase.SaveProfileUseCase
+import ru.urfu.cryptoapp.domain.usecase.ScheduleLectureReminderUseCase
 import ru.urfu.cryptoapp.ui.coins.details.CoinDetailsViewModel
 import ru.urfu.cryptoapp.ui.coins.list.CoinListViewModel
 import ru.urfu.cryptoapp.ui.favorites.FavoritesViewModel
@@ -135,6 +138,7 @@ val repositoryModule = module {
     singleOf(::FiltersRepositoryImpl) bind FiltersRepository::class
     single<ProfileRepository> { ProfileRepositoryImpl(androidContext().profileDataStore) }
     single<AvatarRepository> { AvatarRepositoryImpl(androidContext()) }
+    single<LectureReminderScheduler> { LectureReminderSchedulerImpl(androidContext()) }
     single<DocumentRepository> { DocumentRepositoryImpl(androidContext(), get(DOWNLOAD_CLIENT)) }
 }
 
@@ -154,6 +158,7 @@ val useCaseModule = module {
     factoryOf(::ImportAvatarUseCase)
     factoryOf(::DeleteUnusedAvatarsUseCase)
     factoryOf(::DownloadResumeUseCase)
+    factory { ScheduleLectureReminderUseCase(get()) }
 }
 
 val presentationModule = module {

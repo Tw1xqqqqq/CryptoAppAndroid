@@ -26,6 +26,15 @@ interface AvatarRepository {
     suspend fun deleteUnusedAvatars(keepUri: String?)
 }
 
+/** Планирование напоминания о начале пары. */
+interface LectureReminderScheduler {
+
+    /** Заменяет прежнее напоминание, если оно было. */
+    fun schedule(triggerAtMillis: Long, ownerName: String)
+
+    fun cancel()
+}
+
 /** Скачивание документов из сети. */
 interface DocumentRepository {
 

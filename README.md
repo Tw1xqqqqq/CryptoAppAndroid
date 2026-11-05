@@ -1,7 +1,31 @@
-# CryptoApp — Практика 6 «Профиль»
+# CryptoApp — Практика 7 «Время любимой пары»
 
 Предметная область: **CoinGecko** (вариант 15). Данные загружаются из [CoinGecko API v3](https://docs.coingecko.com/reference/introduction),
 фильтры и профиль хранятся в **DataStore**, избранное — в **Room**.
+
+## Практика 7
+На экране редактирования профиля появилось поле «Время любимой пары». В это время приходит уведомление с именем владельца профиля, нажатие на него открывает приложение.
+
+### Поле времени
+- Заполняется с клавиатуры или на часах (иконка в поле открывает `TimePicker`, 24-часовой формат).
+- Правило формата — `LectureTime.parse` (строго `HH:mm`). Пустое поле или другой формат: ошибка «Некорректный формат времени», галочка «Готово» недоступна.
+
+### Как работает напоминание
+1. «Готово» — профиль сохраняется, `ScheduleLectureReminderUseCase` считает момент срабатывания на сегодня.
+2. `LectureReminderSchedulerImpl` ставит точный будильник в `AlarmManager`, имя кладётся в `Intent`, поэтому в уведомлении будет имя на момент установки. Повторное сохранение заменяет прежний будильник.
+3. В нужное время `LectureReminderReceiver` (`BroadcastReceiver`) создаёт `NotificationChannel` и показывает уведомление через `NotificationManager`. Приложение при этом может быть выгружено из памяти.
+4. Нажатие возвращает открытое приложение на текущий экран (`CLEAR_TOP` + `SINGLE_TOP`) или запускает его заново.
+
+### Разрешения
+| Разрешение | Android | Зачем |
+|---|---|---|
+| `POST_NOTIFICATIONS` | 13+ | показ уведомления; запрашивается при сохранении, при отказе профиль всё равно сохраняется |
+| `USE_EXACT_ALARM` | 13+ | точный будильник, выдаётся автоматически |
+| `SCHEDULE_EXACT_ALARM` | 12 | точный будильник; если доступ отозван в настройках, напоминание ставится неточным и может прийти с задержкой |
+
+### Ограничения
+- Напоминание ставится только на сегодня. Если время уже прошло, напоминания не будет, приложение сообщает об этом: иначе `AlarmManager` сработал бы сразу.
+- Перезагрузка устройства и принудительная остановка приложения снимают будильник (так работает `AlarmManager`); заново он ставится при следующем сохранении профиля.
 
 ## Практика 6
 Вкладка «Профиль» из двух экранов: просмотр и редактирование (карандаш в шапке, «Готово» — галочка).
@@ -67,12 +91,13 @@
 ## Слои
 ```
 domain/model        CoinMarket, CoinDetails, CoinOverview, CoinFilters, DataError + DataException
-domain/repository   CoinRepository, FiltersRepository, FavoritesRepository, ProfileRepository, AvatarRepository, DocumentRepository — интерфейсы
+domain/repository   CoinRepository, FiltersRepository, FavoritesRepository, ProfileRepository, AvatarRepository, DocumentRepository, LectureReminderScheduler — интерфейсы
 domain/usecase      монеты, фильтры, избранное, профиль
 data/remote         CoinGeckoApi (Retrofit), DTO, ApiKeyInterceptor, safeApiCall, ApiParams
 data/local/prefs    FiltersRepositoryImpl — Preferences DataStore
 data/local/db       AppDatabase, FavoritesDao, FavoriteCoinEntity — Room
 data/local/profile  ProfileRepositoryImpl — типизированный DataStore
+data/notification   LectureReminderSchedulerImpl (AlarmManager), LectureReminderReceiver (уведомление)
 data/mapper         DTO -> доменные модели (null-поля API, очистка HTML в описании)
 data/cache          MemoryCache — кэш ответов сети в памяти с TTL
 data/repository     CoinRepositoryImpl, FavoritesRepositoryImpl, AvatarRepositoryImpl, DocumentRepositoryImpl
