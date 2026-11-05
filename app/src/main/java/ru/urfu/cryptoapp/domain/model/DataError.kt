@@ -8,6 +8,7 @@ enum class DataError {
     RATE_LIMIT, // HTTP 429 — исчерпан лимит запросов CoinGecko
     NOT_FOUND,  // HTTP 404
     SERVER,     // HTTP 5xx
+    FILE_TOO_LARGE, // скачиваемый файл больше допустимого размера
     UNKNOWN,    // всё остальное (в т.ч. неожиданный формат ответа)
 }
 
