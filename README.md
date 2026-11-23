@@ -130,24 +130,35 @@ startKoin { modules(coreNetworkModule, /* модули app */, profileModule) }
 | Детали (шапка) | `GET /coins/markets?ids={id}` | только если монеты нет в кэше |
 
 ## Слои
+Внутри каждого модуля — те же слои Clean Architecture.
 ```
-domain/model        CoinMarket, CoinDetails, CoinOverview, CoinFilters, DataError + DataException
-domain/repository   CoinRepository, FiltersRepository, FavoritesRepository, ProfileRepository, AvatarRepository, DocumentRepository, LectureReminderScheduler — интерфейсы
-domain/usecase      монеты, фильтры, избранное, профиль
-data/remote         CoinGeckoApi (Retrofit), DTO, ApiKeyInterceptor, safeApiCall, ApiParams
-data/local/prefs    FiltersRepositoryImpl — Preferences DataStore
-data/local/db       AppDatabase, FavoritesDao, FavoriteCoinEntity — Room
-data/local/profile  ProfileRepositoryImpl — типизированный DataStore
-data/notification   LectureReminderSchedulerImpl (AlarmManager), LectureReminderReceiver (уведомление)
-data/mapper         DTO -> доменные модели (null-поля API, очистка HTML в описании)
-data/cache          MemoryCache — кэш ответов сети в памяти с TTL
-data/repository     CoinRepositoryImpl, FavoritesRepositoryImpl, AvatarRepositoryImpl, DocumentRepositoryImpl
-di                  модули Koin, запускаются в CryptoApplication
-ui/coins            список и детали
-ui/coins/model      UI-модели и CoinUiMapper: ViewModel отдаёт экрану уже отформатированные строки
-ui/filters          экран фильтров, FilterBadgeCache
-ui/favorites        экран избранного
-ui/profile          экраны профиля и редактирования
+app
+  domain/model        CoinMarket, CoinDetails, CoinOverview, CoinFilters
+  domain/repository   CoinRepository, FiltersRepository, FavoritesRepository — интерфейсы
+  domain/usecase      монеты, фильтры, избранное
+  data/remote         CoinGeckoApi (Retrofit), DTO, ApiKeyInterceptor, ApiParams
+  data/local/prefs    FiltersRepositoryImpl — Preferences DataStore
+  data/local/db       AppDatabase, FavoritesDao, FavoriteCoinEntity — Room
+  data/mapper         DTO -> доменные модели (null-поля API, очистка HTML в описании)
+  data/cache          MemoryCache — кэш ответов сети в памяти с TTL
+  data/repository     CoinRepositoryImpl, FavoritesRepositoryImpl
+  di                  модули Koin app; вместе с модулями core и feature запускаются в CryptoApplication
+  ui/coins            список и детали
+  ui/coins/model      UI-модели и CoinUiMapper: ViewModel отдаёт экрану уже отформатированные строки
+  ui/filters          экран фильтров, FilterBadgeCache
+  ui/favorites        экран избранного
+  ui/navigation       NavHost и нижняя панель; граф профиля подключается из :feature:profile
+
+feature/profile
+  domain              UserProfile, LectureTime; ProfileRepository, AvatarRepository, DocumentRepository, LectureReminderScheduler; use case'ы
+  data                ProfileRepositoryImpl (типизированный DataStore), AvatarRepositoryImpl, DocumentRepositoryImpl,
+                      LectureReminderSchedulerImpl (AlarmManager), LectureReminderReceiver (уведомление)
+  ui                  экраны профиля и редактирования, их ViewModel
+  ProfileFeature.kt   публичное API: profileModule, profileGraph, ProfileNavigation
+
+core/domain           DataError, DataException
+core/network          coreNetworkModule (HTTP-клиенты), safeApiCall
+core/ui               CryptoAppTheme
 ```
 
 ## Загрузка и ошибки
