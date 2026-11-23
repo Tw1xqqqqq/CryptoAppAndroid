@@ -14,8 +14,8 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import ru.urfu.cryptoapp.domain.model.CoinMarket
-import ru.urfu.cryptoapp.domain.model.DataError
-import ru.urfu.cryptoapp.domain.model.toDataError
+import ru.urfu.cryptoapp.core.domain.DataError
+import ru.urfu.cryptoapp.core.domain.toDataError
 import ru.urfu.cryptoapp.domain.usecase.AddFavoriteUseCase
 import ru.urfu.cryptoapp.domain.usecase.GetCoinOverviewUseCase
 import ru.urfu.cryptoapp.domain.usecase.ObserveIsFavoriteUseCase

@@ -26,8 +26,8 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import ru.urfu.cryptoapp.R
 import ru.urfu.cryptoapp.ui.coins.model.PriceChangeUi
-import ru.urfu.cryptoapp.ui.theme.PriceDown
-import ru.urfu.cryptoapp.ui.theme.PriceUp
+import ru.urfu.cryptoapp.core.ui.theme.PriceDown
+import ru.urfu.cryptoapp.core.ui.theme.PriceUp
 
 /** Иконка монеты; пока картинка грузится (или если не загрузилась) — видна первая буква. */
 @Composable

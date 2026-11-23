@@ -11,11 +11,11 @@ import ru.urfu.cryptoapp.data.cache.MemoryCache
 import ru.urfu.cryptoapp.data.mapper.toDomain
 import ru.urfu.cryptoapp.data.remote.CoinGeckoApi
 import ru.urfu.cryptoapp.data.remote.apiValue
-import ru.urfu.cryptoapp.data.remote.safeApiCall
+import ru.urfu.cryptoapp.core.network.safeApiCall
 import ru.urfu.cryptoapp.domain.model.CoinDetails
 import ru.urfu.cryptoapp.domain.model.CoinFilters
 import ru.urfu.cryptoapp.domain.model.CoinMarket
-import ru.urfu.cryptoapp.domain.model.DataException
+import ru.urfu.cryptoapp.core.domain.DataException
 import ru.urfu.cryptoapp.domain.model.VsCurrency
 import ru.urfu.cryptoapp.domain.repository.CoinRepository
 

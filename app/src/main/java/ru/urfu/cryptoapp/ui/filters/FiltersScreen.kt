@@ -47,7 +47,7 @@ import ru.urfu.cryptoapp.domain.model.CoinCategory
 import ru.urfu.cryptoapp.domain.model.CoinFilters
 import ru.urfu.cryptoapp.domain.model.SortOrder
 import ru.urfu.cryptoapp.domain.model.VsCurrency
-import ru.urfu.cryptoapp.ui.theme.CryptoAppTheme
+import ru.urfu.cryptoapp.core.ui.theme.CryptoAppTheme
 
 @Composable
 fun FiltersRoute(

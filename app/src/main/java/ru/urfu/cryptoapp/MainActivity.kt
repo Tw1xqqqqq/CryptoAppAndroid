@@ -5,7 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import ru.urfu.cryptoapp.ui.navigation.CryptoApp
-import ru.urfu.cryptoapp.ui.theme.CryptoAppTheme
+import ru.urfu.cryptoapp.core.ui.theme.CryptoAppTheme
 
 /** Single Activity: все экраны — compose-destinations внутри NavHost. */
 class MainActivity : ComponentActivity() {

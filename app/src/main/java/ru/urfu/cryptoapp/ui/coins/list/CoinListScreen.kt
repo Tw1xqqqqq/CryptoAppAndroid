@@ -53,7 +53,7 @@ import ru.urfu.cryptoapp.ui.common.ErrorState
 import ru.urfu.cryptoapp.ui.common.PriceChangeChip
 import ru.urfu.cryptoapp.ui.common.PlaceholderScreen
 import ru.urfu.cryptoapp.ui.common.messageRes
-import ru.urfu.cryptoapp.ui.theme.CryptoAppTheme
+import ru.urfu.cryptoapp.core.ui.theme.CryptoAppTheme
 
 @Composable
 fun CoinListRoute(

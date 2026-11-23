@@ -2,7 +2,7 @@ package ru.urfu.cryptoapp.ui.common
 
 import androidx.annotation.StringRes
 import ru.urfu.cryptoapp.R
-import ru.urfu.cryptoapp.domain.model.DataError
+import ru.urfu.cryptoapp.core.domain.DataError
 
 @StringRes
 fun DataError.messageRes(): Int = when (this) {

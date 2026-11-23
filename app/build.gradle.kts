@@ -54,6 +54,11 @@ android {
 }
 
 dependencies {
+    implementation(project(":core:domain"))
+    implementation(project(":core:network"))
+    implementation(project(":core:ui"))
+    implementation(project(":feature:profile"))
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.runtime.compose)
@@ -76,18 +81,13 @@ dependencies {
     implementation(libs.retrofit)
     implementation(libs.retrofit.converter.kotlinx.serialization)
     implementation(libs.okhttp)
-    implementation(libs.okhttp.logging.interceptor)
     implementation(libs.kotlinx.serialization.json)
-    // Chucker — просмотр запросов прямо на устройстве (только debug)
-    debugImplementation(libs.chucker)
-    releaseImplementation(libs.chucker.no.op)
 
     // Локальное хранение: Room (избранное) и DataStore (фильтры)
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
     ksp(libs.room.compiler)
     implementation(libs.datastore.preferences)
-    implementation(libs.datastore)
 
     // DI
     implementation(libs.koin.android)
