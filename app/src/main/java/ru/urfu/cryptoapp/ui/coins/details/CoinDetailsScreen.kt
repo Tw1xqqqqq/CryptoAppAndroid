@@ -65,9 +65,9 @@ import ru.urfu.cryptoapp.ui.common.CoinAvatar
 import ru.urfu.cryptoapp.ui.common.ErrorState
 import ru.urfu.cryptoapp.ui.common.PriceChangeChip
 import ru.urfu.cryptoapp.ui.common.messageRes
-import ru.urfu.cryptoapp.ui.theme.CryptoAppTheme
-import ru.urfu.cryptoapp.ui.theme.PriceDown
-import ru.urfu.cryptoapp.ui.theme.PriceUp
+import ru.urfu.cryptoapp.core.ui.theme.CryptoAppTheme
+import ru.urfu.cryptoapp.core.ui.theme.PriceDown
+import ru.urfu.cryptoapp.core.ui.theme.PriceUp
 
 @Composable
 fun CoinDetailsRoute(

@@ -11,8 +11,8 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import ru.urfu.cryptoapp.domain.model.CoinFilters
-import ru.urfu.cryptoapp.domain.model.DataError
-import ru.urfu.cryptoapp.domain.model.toDataError
+import ru.urfu.cryptoapp.core.domain.DataError
+import ru.urfu.cryptoapp.core.domain.toDataError
 import ru.urfu.cryptoapp.domain.usecase.GetCoinMarketsUseCase
 import ru.urfu.cryptoapp.domain.usecase.ObserveFiltersUseCase
 import ru.urfu.cryptoapp.ui.coins.model.CoinListItemUi

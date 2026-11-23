@@ -1,7 +1,48 @@
-# CryptoApp — Практика 7 «Время любимой пары»
+# CryptoApp — Практика 8 «Многомодульность»
 
 Предметная область: **CoinGecko** (вариант 15). Данные загружаются из [CoinGecko API v3](https://docs.coingecko.com/reference/introduction),
 фильтры и профиль хранятся в **DataStore**, избранное — в **Room**.
+
+## Практика 8
+Профиль (экраны, аватарка, резюме, напоминание о паре) вынесен из `app` в модуль `:feature:profile`.
+Чтобы фича не зависела от `app`, из монолита выделены и общие core-модули.
+
+### Модули
+```mermaid
+graph TD
+    app --> feature_profile[":feature:profile"]
+    app --> core_network[":core:network"]
+    app --> core_ui[":core:ui"]
+    app --> core_domain[":core:domain"]
+    feature_profile --> core_network
+    feature_profile --> core_ui
+    feature_profile --> core_domain
+    core_network --> core_domain
+```
+
+| Модуль | Тип | Что внутри |
+|---|---|---|
+| `:app` | Android application | монеты, избранное, фильтры; навигация и DI всего приложения |
+| `:feature:profile` | Android library | профиль целиком: domain (модели, репозитории, use case'ы), data (DataStore, файлы, AlarmManager), ui (экраны, ViewModel); свой манифест и ресурсы |
+| `:core:network` | Android library | общий HTTP-клиент (Chucker, логирование), клиент для скачивания, `safeApiCall` |
+| `:core:ui` | Android library | тема приложения `CryptoAppTheme` |
+| `:core:domain` | Kotlin (JVM) | `DataError` / `DataException` — ошибки, общие для всех модулей |
+
+Правила:
+- Зависимости только сверху вниз: `app` → `feature` → `core`. Ни один модуль не зависит от `app`, `feature`-модули не зависят друг от друга.
+- У `:feature:profile` три публичных объявления — `profileModule` (Koin), `profileGraph()` (граф навигации) и `ProfileNavigation` (маршруты для нижней панели). Всё остальное `internal`, поэтому `app` не может обратиться к классам профиля напрямую.
+- Манифест фичи (разрешения, `BroadcastReceiver`, `FileProvider`) при сборке сливается с манифестом `app`.
+- `:core:domain` — чистый Kotlin без Android SDK: доменные типы не зависят от платформы.
+
+### Подключение в app
+```kotlin
+// навигация
+NavHost(...) {
+    profileGraph(navController)
+}
+// DI
+startKoin { modules(coreNetworkModule, /* модули app */, profileModule) }
+```
 
 ## Практика 7
 На экране редактирования профиля появилось поле «Время любимой пары». В это время приходит уведомление с именем владельца профиля, нажатие на него открывает приложение.

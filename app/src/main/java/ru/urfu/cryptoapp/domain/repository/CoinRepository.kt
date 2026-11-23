@@ -8,7 +8,7 @@ import ru.urfu.cryptoapp.domain.model.VsCurrency
 
 /**
  * Источник данных о монетах (CoinGecko API + кэш в памяти).
- * Все методы main-safe и при ошибке бросают [ru.urfu.cryptoapp.domain.model.DataException].
+ * Все методы main-safe и при ошибке бросают [ru.urfu.cryptoapp.core.domain.DataException].
  */
 interface CoinRepository {
 

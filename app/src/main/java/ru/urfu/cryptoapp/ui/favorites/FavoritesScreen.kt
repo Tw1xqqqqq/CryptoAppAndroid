@@ -29,7 +29,7 @@ import ru.urfu.cryptoapp.data.mock.MockCoinData
 import ru.urfu.cryptoapp.ui.coins.list.CoinListItem
 import ru.urfu.cryptoapp.ui.coins.model.CoinUiMapper
 import ru.urfu.cryptoapp.ui.common.PlaceholderScreen
-import ru.urfu.cryptoapp.ui.theme.CryptoAppTheme
+import ru.urfu.cryptoapp.core.ui.theme.CryptoAppTheme
 
 @Composable
 fun FavoritesRoute(
